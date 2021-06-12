@@ -63,10 +63,10 @@ It is also scalable on large and especially long datasets, compared to FastWWSea
 
 <div class="row">
   <div class="column">
-    <img src="results/scalability_length_HandOutlines.png" style="width:100%">
+    <img src="results/scalability_length_HandOutlines.png" style="width:50%">
   </div>
   <div class="column">
-    <img src="results/scalability_size_SITS.png" style="width:100%">
+    <img src="results/scalability_size_SITS.png" style="width:50%">
   </div>
 </div> 
 
