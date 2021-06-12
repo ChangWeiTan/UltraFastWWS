@@ -59,6 +59,19 @@ UltraFastWWSearch is significantly faster than all methods and achieves up to on
 </p>
 
 
+It is also scalable on large and especially long datasets, compared to FastWWSearch.
+
+<div class="row">
+  <div class="column">
+    <img src="results/scalability_length_HandOutlines.png" style="width:100%">
+  </div>
+  <div class="column">
+    <img src="results/scalability_size_SITS.png" style="width:100%">
+  </div>
+</div> 
+
+
+
 ## References
 [1] C. W. Tan, M. Herrmann, G. Forestier, G. I. Webb, and F. Petitjean,
 “Efficient search of the best warping window for dynamic time warping,”
