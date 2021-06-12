@@ -61,15 +61,12 @@ UltraFastWWSearch is significantly faster than all methods and achieves up to on
 
 It is also scalable on large and especially long datasets, compared to FastWWSearch.
 
-<div class="row">
-  <div class="column">
-    <img src="results/scalability_length_HandOutlines.png" style="width:50%">
-  </div>
-  <div class="column">
-    <img src="results/scalability_size_SITS.png" style="width:50%">
-  </div>
-</div> 
-
+<p align="center">
+  <img src="results/scalability_length_HandOutlines.png"/>
+</p>
+<p align="center">
+  <img src="results/scalability_size_SITS.png"/>
+</p>
 
 
 ## References
