@@ -49,7 +49,7 @@ Remember to compile beforehand
 
 The following figure shows the total training time taken for each method (excluding LOOCV) on the 128 UCR datasets [3].
 <p align="center">
-  <img src="results/total_time.png"/>
+  <img src="results/total_time.pdf"/>
 </p>
 
 UltraFastWWSearch is significantly faster than all methods and achieves up to one order magnitude speedup than the state-of-the-art FastWWSearch [1].
