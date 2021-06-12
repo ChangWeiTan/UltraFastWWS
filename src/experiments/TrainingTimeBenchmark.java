@@ -5,16 +5,8 @@ import classifiers.TimeSeriesClassifier;
 import datasets.DatasetLoader;
 import datasets.Sequences;
 import datasets.TimeSeriesDatasets;
-import multiThreading.BenchmarkTask;
-import multiThreading.MultiThreadedTask;
 import results.ClassificationResults;
 import results.TrainingClassificationResults;
-import utils.StrLong;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 import static application.Application.extractArguments;
 import static utils.GenericTools.doTimeNs;
@@ -24,7 +16,7 @@ public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
             "-problem=test",
-            "-classifier=EAPDTW_1NN-FastCV_EA_NoLb-LbKeoghV1-NNOrderV2",
+            "-classifier=UltraFastWWSearch", // see classifiers in TimeSeriesClassifier.java
             "-paramId=99",
             "-cpu=-1",
             "-verbose=1",
@@ -34,7 +26,7 @@ public class TrainingTimeBenchmark {
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-        args = testArgs;
+//        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
@@ -42,60 +34,21 @@ public class TrainingTimeBenchmark {
 
         Application.printSummary(moduleName);
 
-        if (Application.problem.equals("small") || Application.problem.equals("all")) {
-            String[] datasets;
-            StrLong[] datasetOps;
-            if (Application.problem.equals("small")) {
-                datasets = TimeSeriesDatasets.smallDatasets;
-                datasetOps = TimeSeriesDatasets.smallDatasetOperations;
-            } else {
-                datasets = TimeSeriesDatasets.allDatasets;
-                datasetOps = TimeSeriesDatasets.allDatasetOperations;
-            }
-            Arrays.sort(datasetOps);
-            long totalOp = 0;
-            for (StrLong s : datasetOps)
-                totalOp += s.value;
-
-            println("[" + moduleName + "] Number of datasets: " + datasets.length);
-            println("[" + moduleName + "] Total operations: " + totalOp);
-
-            // Setup parallel training tasks
-            int numThreads = Application.numThreads;
-            if (numThreads <= 0) numThreads = Runtime.getRuntime().availableProcessors();
-            numThreads = Math.min(numThreads, Runtime.getRuntime().availableProcessors());
-
-            long operationPerThread = totalOp / numThreads;
-
-            println("[" + moduleName + "] Number of threads: " + numThreads);
-            println("[" + moduleName + "] Operations per thread: " + operationPerThread);
-
-            final MultiThreadedTask parallelTasks = new MultiThreadedTask(numThreads);
-
-            List<Callable<Integer>> tasks = new ArrayList<>();
-            ArrayList<String>[] subset = new ArrayList[numThreads];
-            for (int i = 0; i < numThreads; i++)
-                subset[i] = new ArrayList<>();
-
-            int threadCount = 0;
-            for (StrLong s : datasetOps) {
-                subset[threadCount].add(s.str);
-                threadCount++;
-                if (threadCount == numThreads) threadCount = 0;
-            }
-            for (int i = 0; i < numThreads; i++) {
-                String[] tmp = new String[subset[i].size()];
-                for (int j = 0; j < subset[i].size(); j++) {
-                    tmp[j] = subset[i].get(subset[i].size() - j - 1);
-                }
-                tasks.add(new BenchmarkTask(tmp, i));
-            }
-            MultiThreadedTask.invokeParallelTasks(tasks, parallelTasks);
-            parallelTasks.getExecutor().shutdown();
-        } else if (Application.problem.equals("test")) {
-            quickTest();
-        } else {
-            singleRun(Application.problem);
+        switch (Application.problem) {
+            case "all":
+                for (String problem : TimeSeriesDatasets.allDatasets)
+                    singleRun(problem);
+                break;
+            case "small":
+                for (String problem : TimeSeriesDatasets.smallDatasets)
+                    singleRun(problem);
+                break;
+            case "test":
+                quickTest();
+                break;
+            default:
+                singleRun(Application.problem);
+                break;
         }
         final long endTime = System.nanoTime();
         println("[" + moduleName + "] Total time taken " + doTimeNs(endTime - startTime));

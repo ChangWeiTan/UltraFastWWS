@@ -6,7 +6,8 @@ import distances.lowerBounds.LbKeogh;
 import results.TrainingClassificationResults;
 
 /**
- * DTW-1NN with no training and Lb Keogh
+ * Super class for DTW-1NN
+ * DTW-1NN with LbKeogh
  */
 public class DTW1NNLbKeogh extends DTW1NN {
     protected LbKeogh lbComputer = new LbKeogh();

@@ -4,22 +4,23 @@ import datasets.Sequences;
 import results.TrainingClassificationResults;
 
 /**
- * DTW-1NN with FastCV training and Lb Keogh
+ * FastWWSearch
+ * Code from "Efficient search of the best warping window for dynamic time warping"
  */
 public class FastWWSearch extends DTW1NNLbKeogh {
     public FastWWSearch() {
         super();
-        this.classifierIdentifier = "DTW_1NN-FastCV-LbKeogh";
+        this.classifierIdentifier = "FastWWSearch-LbKeogh";
     }
 
     public FastWWSearch(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "DTW_1NN-FastCV-LbKeogh";
+        this.classifierIdentifier = "FastWWSearch-LbKeogh";
     }
 
     public FastWWSearch(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "DTW_1NN-FastCV-LbKeogh";
+        this.classifierIdentifier = "FastWWSearch-LbKeogh";
     }
 
     @Override

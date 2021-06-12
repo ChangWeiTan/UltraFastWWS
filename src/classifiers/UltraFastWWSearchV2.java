@@ -12,7 +12,9 @@ import java.util.Collections;
 import java.util.stream.IntStream;
 
 /**
- * EAPDTW-1NN with FastCV training and Lb Keogh
+ * UltraFastWWSearch (V2)
+ * "Ultra fast warping window optimization for Dynamic Time Warping"
+ * EAPFastWWSearchEA without lower bound
  */
 public class UltraFastWWSearchV2 extends EAPDTW1NNLbKeogh {
     public UltraFastWWSearchV2() {
@@ -119,12 +121,6 @@ public class UltraFastWWSearchV2 extends EAPDTW1NNLbKeogh {
                 // --- Try to beat the previous best NN
                 toBeat = prevNN.distance;
                 challenger = lazyAssessNNS[previous];
-                if (toBeat == Double.POSITIVE_INFINITY) {
-                    challenger.tryEuclidean();
-                    bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                } else {
-                    bestSoFar = Math.max(toBeat, currPNN.distance);
-                }
                 rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                 // --- Check the result
@@ -177,9 +173,9 @@ public class UltraFastWWSearchV2 extends EAPDTW1NNLbKeogh {
                         final LazyAssessNNEAPDTW challenger = lazyAssessNNS[previous];
                         if (toBeat == Double.POSITIVE_INFINITY) {
                             challenger.tryEuclidean();
-                            bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
+                            bestSoFar = challenger.euclideanDistance;
                         } else {
-                            bestSoFar = Math.max(toBeat, currPNN.distance);
+                            bestSoFar = toBeat;
                         }
                         final LazyAssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
@@ -231,12 +227,6 @@ public class UltraFastWWSearchV2 extends EAPDTW1NNLbKeogh {
                     // --- Try to beat the previous best NN
                     toBeat = prevNN.distance;
                     challenger = lazyAssessNNS[previous];
-                    if (toBeat == Double.POSITIVE_INFINITY) {
-                        challenger.tryEuclidean();
-                        bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                    } else {
-                        bestSoFar = Math.max(toBeat, currPNN.distance);
-                    }
                     rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                     // --- Check the result
@@ -289,12 +279,6 @@ public class UltraFastWWSearchV2 extends EAPDTW1NNLbKeogh {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        if (toBeat == Double.POSITIVE_INFINITY) {
-                            challenger.tryEuclidean();
-                            bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                        } else {
-                            bestSoFar = Math.max(toBeat, currPNN.distance);
-                        }
                         rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                         // --- Check the result

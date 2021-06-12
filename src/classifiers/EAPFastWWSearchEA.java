@@ -11,22 +11,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * EAPDTW-1NN with FastCV training and Lb Keogh
+ * FastWWSearch EAPDTW-1NN with Lower Bounds
+ * With early abandon
  */
 public class EAPFastWWSearchEA extends EAPDTW1NNLbKeogh {
     public EAPFastWWSearchEA() {
         super();
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA-LbKeoghV1";
+        this.classifierIdentifier = "EAPFastWWSearchEA-LbKeogh";
     }
 
     public EAPFastWWSearchEA(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA-LbKeoghV1";
+        this.classifierIdentifier = "EAPFastWWSearchEA-LbKeogh";
     }
 
     public EAPFastWWSearchEA(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA-LbKeoghV1";
+        this.classifierIdentifier = "EAPFastWWSearchEA-LbKeogh";
     }
 
     @Override

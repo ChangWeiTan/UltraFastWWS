@@ -6,7 +6,7 @@ public class GenericTools {
     static Random random = new Random(100);
 
     public static String doTime(double elapsedTimeNanoSeconds) {
-        final double duration = 1.0 * elapsedTimeNanoSeconds / 1e6;
+        final double duration = elapsedTimeNanoSeconds / 1e6;
         return String.format("%d s %.3f ms", (int) (duration / 1000), (duration % 1000));
     }
 

@@ -13,7 +13,7 @@ import java.util.Collections;
 
 /**
  * Super class for DTW-1NN
- * DTW-1NN with no training and lower bounds
+ * DTW-1NN with no lower bounds
  */
 public class DTW1NN extends OneNearestNeighbour {
     protected double r;
@@ -80,6 +80,9 @@ public class DTW1NN extends OneNearestNeighbour {
         return loocv0(this.trainData);
     }
 
+    /**
+     * Code from "Efficient search of the best warping window for dynamic time warping"
+     */
     @Override
     public void initNNSTable(final Sequences train, final SequenceStatsCache cache) {
         if (train.size() < 2) {

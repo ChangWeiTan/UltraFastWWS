@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * EAPDTW-1NN with no training and lower bounds
+ * Super class for EAPDTW-1NN
+ * EAPDTW-1NN with no lower bounds
  */
 public class EAPDTW1NN extends OneNearestNeighbour {
     protected double r;
@@ -79,6 +80,9 @@ public class EAPDTW1NN extends OneNearestNeighbour {
         return loocv0(this.trainData);
     }
 
+    /**
+     * Code from "Efficient search of the best warping window for dynamic time warping"
+     */
     @Override
     public void initNNSTable(final Sequences train, final SequenceStatsCache cache) {
         if (train.size() < 2) {
@@ -204,7 +208,6 @@ public class EAPDTW1NN extends OneNearestNeighbour {
             }
         }
     }
-
 
     @Override
     public void setTrainingData(final Sequences trainData) {

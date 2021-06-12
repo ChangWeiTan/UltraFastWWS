@@ -4,29 +4,30 @@ import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNDTW_nolb;
+import fastWWS.assessNN.AssessNNDTW;
 import results.TrainingClassificationResults;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * DTW-1NN with FastCV training and Lb Keogh
+ * FastWWSearch without lower bounds
+ * Code from "Efficient search of the best warping window for dynamic time warping"
  */
 public class FastWWSearchNoLb extends DTW1NNLbKeogh {
     public FastWWSearchNoLb() {
         super();
-        this.classifierIdentifier = "DTW_1NN-FastCV_NoLb-LbKeogh";
+        this.classifierIdentifier = "FastWWSearchNoLb-LbKeogh";
     }
 
     public FastWWSearchNoLb(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "DTW_1NN-FastCV_NoLb-LbKeogh";
+        this.classifierIdentifier = "FastWWSearchNoLb-LbKeogh";
     }
 
     public FastWWSearchNoLb(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "DTW_1NN-FastCV_NoLb-LbKeogh";
+        this.classifierIdentifier = "FastWWSearchNoLb-LbKeogh";
     }
 
     @Override
@@ -49,18 +50,18 @@ public class FastWWSearchNoLb extends DTW1NNLbKeogh {
         }
         classCounts = new int[nParams][train.size()][train.getNumClasses()];
 
-        final LazyAssessNNDTW_nolb[] lazyAssessNNS = new LazyAssessNNDTW_nolb[train.size()];
+        final AssessNNDTW[] lazyAssessNNS = new AssessNNDTW[train.size()];
         for (int i = 0; i < train.size(); ++i) {
-            lazyAssessNNS[i] = new LazyAssessNNDTW_nolb(cache);
+            lazyAssessNNS[i] = new AssessNNDTW(cache);
         }
-        final ArrayList<LazyAssessNNDTW_nolb> challengers = new ArrayList<>(train.size());
+        final ArrayList<AssessNNDTW> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
             final Sequence sCurrent = train.get(current);
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final LazyAssessNNDTW_nolb d = lazyAssessNNS[previous];
+                final AssessNNDTW d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
@@ -78,11 +79,11 @@ public class FastWWSearchNoLb extends DTW1NNLbKeogh {
 
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
-                        final LazyAssessNNDTW_nolb challenger = lazyAssessNNS[previous];
-                        final LazyAssessNNDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win);
+                        final AssessNNDTW challenger = lazyAssessNNS[previous];
+                        final AssessNNDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNDTW.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
                             final double d = challenger.getDistance(win);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
@@ -100,16 +101,16 @@ public class FastWWSearchNoLb extends DTW1NNLbKeogh {
                     // Sort the challengers so we have the better chance to organize the good pruning.
                     Collections.sort(challengers);
 
-                    for (LazyAssessNNDTW_nolb challenger : challengers) {
+                    for (AssessNNDTW challenger : challengers) {
                         final int previous = challenger.indexQuery;
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- First we want to beat the current best candidate:
                         double toBeat = currPNN.distance;
-                        LazyAssessNNDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win);
+                        AssessNNDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNDTW.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
                             final double d = challenger.getDistance(win);
                             currPNN.set(previous, r, d, CandidateNN.Status.BC);
@@ -128,7 +129,7 @@ public class FastWWSearchNoLb extends DTW1NNLbKeogh {
                         rrt = challenger.tryToBeat(toBeat, win);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNDTW.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
                             final double d = challenger.getDistance(win);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);

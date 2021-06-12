@@ -6,7 +6,6 @@ public class CandidateNN {
         BC,                         // Best Candidate so far
     }
 
-    public int index;
     public int nnIndex;               // Index of the sequence in train
     public int r;                   // Window validity
     public int paramValidity;
@@ -20,13 +19,6 @@ public class CandidateNN {
         this.status = Status.BC;                        // By default, we don't have any found NN.
     }
 
-    public CandidateNN(int index) {
-        this.index = index;
-        this.nnIndex = Integer.MIN_VALUE;                 // Will be an invalid, negative, index.
-        this.r = Integer.MAX_VALUE;                     // Max: stands for "haven't found yet"
-        this.distance = Double.POSITIVE_INFINITY;       // Infinity: stands for "not computed yet".
-        this.status = Status.BC;                        // By default, we don't have any found NN.
-    }
 
     public void set(final int index, final int r, final int p, final double distance, final Status status) {
         this.nnIndex = index;
@@ -56,7 +48,6 @@ public class CandidateNN {
 
     @Override
     public String toString() {
-//        return String.format("%d - %d (%.4f)", this.index, this.nnIndex, this.distance);
         return String.format("%d (%.4f)", this.nnIndex, this.distance);
     }
 

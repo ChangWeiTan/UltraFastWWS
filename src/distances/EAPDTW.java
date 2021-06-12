@@ -9,6 +9,10 @@ import static java.lang.Double.min;
 import static java.lang.Integer.max;
 import static utils.GenericTools.min3;
 
+/**
+ * Early Abandon Prune DTW
+ * Code taken from "Early abandoning and pruning for elastic distances"
+ */
 public class EAPDTW extends ElasticDistances {
     public double distance(double[] lines, double[] cols, double cutoff) {
         // Ensure that lines are longer than columns

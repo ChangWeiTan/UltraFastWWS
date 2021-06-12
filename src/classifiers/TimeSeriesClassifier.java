@@ -9,6 +9,21 @@ import results.TrainingClassificationResults;
  * A super class for time series classifiers
  */
 public abstract class TimeSeriesClassifier {
+    public static String[] classifiers = new String[]{
+            "DTWLoocv",
+            "UCRSuiteLOOCV",
+            "EAPLoocv",
+            "FastWWSearch",
+            "FastWWSearchNoLb",
+            "FastWWSearchEA",
+            "EAPFastWWSearch",
+            "EAPFastWWSearchNoLb",
+            "EAPFastWWSearchEA",
+            "UltraFastWWSearchV1",
+            "UltraFastWWSearchV2",
+            "UltraFastWWSearch",
+    };
+
     public enum TrainOpts {
         LOOCV0,
         LOOCVLB,

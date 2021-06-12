@@ -11,22 +11,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * EAPDTW-1NN with FastCV training and Lb Keogh
+ * UltraFastWWSearch (V1)
+ * "Ultra fast warping window optimization for Dynamic Time Warping"
+ * EAPFastWWSearchEA with tighter upper bound
  */
 public class UltraFastWWSearchV1 extends EAPDTW1NNLbKeogh {
     public UltraFastWWSearchV1() {
         super();
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA-LbKeoghV1";
+        this.classifierIdentifier = "UltraFastWWSearchV1";
     }
 
     public UltraFastWWSearchV1(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA-LbKeoghV1";
+        this.classifierIdentifier = "UltraFastWWSearchV1";
     }
 
     public UltraFastWWSearchV1(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA-LbKeoghV1";
+        this.classifierIdentifier = "UltraFastWWSearchV1";
     }
 
     @Override
@@ -88,9 +90,9 @@ public class UltraFastWWSearchV1 extends EAPDTW1NNLbKeogh {
                         final LazyAssessNNEAPDTW challenger = lazyAssessNNS[previous];
                         if (toBeat == Double.POSITIVE_INFINITY) {
                             challenger.tryEuclidean();
-                            bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
+                            bestSoFar = challenger.euclideanDistance;
                         } else {
-                            bestSoFar = Math.max(toBeat, currPNN.distance);
+                            bestSoFar = toBeat;
                         }
                         final LazyAssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
@@ -144,12 +146,6 @@ public class UltraFastWWSearchV1 extends EAPDTW1NNLbKeogh {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        if (toBeat == Double.POSITIVE_INFINITY) {
-                            challenger.tryEuclidean();
-                            bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                        } else {
-                            bestSoFar = Math.max(toBeat, currPNN.distance);
-                        }
                         rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                         // --- Check the result

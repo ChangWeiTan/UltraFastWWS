@@ -87,7 +87,6 @@ public class DatasetLoader {
 
         long usedMem;
         int label;
-        int i = 0;
         int[] fileInfo;
         final File f = new File(fileName);
         boolean hasMissing = false;
@@ -139,20 +138,6 @@ public class DatasetLoader {
                 }
 
                 dataset.add(new Sequence(tmp, label));
-
-                // update status
-                i++;
-                if (i % 1000 == 0) {
-                    if (i % 100000 == 0) {
-//                        System.out.print("\n");
-                        if (i % 1000000 == 0) {
-                            usedMem = Application.runtime.totalMemory() - Application.runtime.freeMemory();
-                            System.out.print(i + ":" + usedMem / 1024 / 1024 + "mb\n");
-                        }
-                    } else {
-                        System.out.print("");
-                    }
-                }
             }
             final long endTime = System.nanoTime();
             final long elapsed = endTime - startTime;
@@ -173,13 +158,12 @@ public class DatasetLoader {
             }
         }
         dataset.reorderClass();
-//        dataset.shuffle(42);
         if (Application.iteration > 0)
             dataset.shuffle(Application.iteration);
         return dataset;
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         String datasetName = "BeetleFly";
         // Get project and dataset path
         String osName = System.getProperty("os.name");

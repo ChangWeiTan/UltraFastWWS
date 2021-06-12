@@ -5,16 +5,20 @@ import distances.DTW;
 import fastWWS.SequenceStatsCache;
 import results.WarpingPathResults;
 
-public class LazyAssessNNDTW_nolb extends LazyAssessNN {
+/**
+ * AssessNN with DTW
+ * No lowerbounds
+ */
+public class AssessNNDTW extends LazyAssessNN {
     private final DTW dtwComputer = new DTW();
 
-    public LazyAssessNNDTW_nolb(final SequenceStatsCache cache) {
+    public AssessNNDTW(final SequenceStatsCache cache) {
         super(cache);
     }
 
-    public LazyAssessNNDTW_nolb(final Sequence query, final int index,
-                                final Sequence reference, final int indexReference,
-                                final SequenceStatsCache cache) {
+    public AssessNNDTW(final Sequence query, final int index,
+                       final Sequence reference, final int indexReference,
+                       final SequenceStatsCache cache) {
         super(query, index, reference, indexReference, cache);
         this.bestMinDist = minDist;
         this.status = LBStatus.None;

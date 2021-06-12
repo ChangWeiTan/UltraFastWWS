@@ -5,6 +5,9 @@ import distances.EAPDTW;
 import fastWWS.SequenceStatsCache;
 import results.WarpingPathResults;
 
+/**
+ * LazyAssessNN with EAP
+ */
 public class LazyAssessNNEAPDTW extends LazyAssessNN {
     private final EAPDTW dtwComputer = new EAPDTW();
 

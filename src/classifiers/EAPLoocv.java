@@ -4,10 +4,9 @@ import datasets.Sequences;
 import results.TrainingClassificationResults;
 
 /**
- * EAPDTW-1NN with LOOCV training and Lb Keogh
+ * EAPDTW-1NN with LOOCV training and LbKeogh
  */
 public class EAPLoocv extends EAPDTW1NNLbKeogh {
-
     public EAPLoocv() {
         super();
         this.classifierIdentifier = "EAPDTW_1NN-LOOCV-LbKeogh";

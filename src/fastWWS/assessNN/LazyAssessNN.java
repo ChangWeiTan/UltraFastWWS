@@ -5,6 +5,9 @@ import fastWWS.SequenceStatsCache;
 
 import static java.lang.Math.*;
 
+/**
+ * Super class for LazyAssessNN
+ */
 public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
     public int indexQuery;
     public int indexReference;         // Index for query and reference

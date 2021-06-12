@@ -120,7 +120,7 @@ public class Application {
                 break;
             case "EAPFastWWSearch":
                 // FastWWSearch with EAP with lower bounds and no early abandoning
-                classifier = new EAPDTW1NNFastcvLbKeogh(paramId, trainData);
+                classifier = new EAPFastWWSearch(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
                 break;
             case "EAPLOOCV":

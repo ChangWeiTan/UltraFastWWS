@@ -6,7 +6,8 @@ import distances.lowerBounds.LbKeogh;
 import results.TrainingClassificationResults;
 
 /**
- * EAPDTW-1NN with no training
+ * Super class for EAPDTW-1NN
+ * EAPDTW-1NN with LbKeogh
  */
 public class EAPDTW1NNLbKeogh extends EAPDTW1NN {
     protected LbKeogh lbComputer = new LbKeogh();

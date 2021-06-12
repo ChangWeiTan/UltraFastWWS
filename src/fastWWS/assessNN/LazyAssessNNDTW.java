@@ -5,6 +5,9 @@ import distances.DTW;
 import fastWWS.SequenceStatsCache;
 import results.WarpingPathResults;
 
+/**
+ * LazyAssessNN with DTW
+ */
 public class LazyAssessNNDTW extends LazyAssessNN {
     private final DTW dtwComputer = new DTW();
 

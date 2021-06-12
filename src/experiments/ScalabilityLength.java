@@ -1,26 +1,24 @@
 package experiments;
 
 import application.Application;
+import classifiers.TimeSeriesClassifier;
+import datasets.DatasetLoader;
+import datasets.Sequences;
 import datasets.TimeSeriesDatasets;
-import multiThreading.MultiThreadedTask;
-import multiThreading.ScalabilityLengthTask;
-import utils.StrDouble;
+import results.ClassificationResults;
+import results.TrainingClassificationResults;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.Objects;
 
 import static application.Application.extractArguments;
 import static utils.GenericTools.doTimeNs;
 import static utils.GenericTools.println;
 
 public class ScalabilityLength {
-    static String moduleName = "FASTEREE";
+    static String moduleName = "ScalabilityLength";
     private static final String[] testArgs = new String[]{
             "-problem=HandOutlines",
-            "-classifier=DTW_1NN-FastCV-LbKeogh",
-//            "-classifier=EAPDTW_1NN-FastCV_EA_NoLb_NNOrder-LbKeoghV9",
-//            "-classifier=EAPDTW_1NN-FastCV_EA_NoLb-LbKeoghV1-NNOrderV2",
+            "-classifier=UltraFastWWSearch", // see classifiers in TimeSeriesClassifier.java
             "-paramId=99",
             "-cpu=-1",
             "-verbose=1",
@@ -33,70 +31,97 @@ public class ScalabilityLength {
         final long startTime = System.nanoTime();
 //        args = testArgs;
         extractArguments(args);
-
-        if (Application.datasetPath == null) {
-            String osName = System.getProperty("os.name");
-            String username = System.getProperty("user.name");
-            if (osName.contains("Window")) {
-                Application.datasetPath = "C:/Users/" + username + "/workspace/Dataset/UCRArchive_2018/";
-            } else {
-                Application.datasetPath = "/home/" + username + "/workspace/Dataset/UCRArchive_2018/";
-            }
-        }
+        if (Application.problem.equals(""))
+            Application.problem = "HandOutlines";
 
         Application.printSummary(moduleName);
-        String[] datasets;
-        if (Application.problem.equals("all")) {
-            datasets = TimeSeriesDatasets.longDatasets;
-            println("[" + moduleName + "] Number of datasets: " + datasets.length);
-        } else {
-            datasets = new String[]{Application.problem};
-        }
 
-        // Setup parallel training tasks
-        int numThreads = Application.numThreads;
-        if (numThreads <= 0) numThreads = Runtime.getRuntime().availableProcessors();
-        numThreads = Math.min(numThreads, Runtime.getRuntime().availableProcessors());
-
-        int operationsPerThread = 10 * datasets.length / numThreads;
-        if (operationsPerThread < 1) numThreads = 10 * datasets.length;
-
-        println("[" + moduleName + "] Number of threads: " + numThreads);
-        println("[" + moduleName + "] Datasets per thread: " + operationsPerThread);
-
-        final MultiThreadedTask parallelTasks = new MultiThreadedTask(numThreads);
-        List<Callable<Integer>> tasks = new ArrayList<>();
-        ArrayList<StrDouble>[] subset = new ArrayList[numThreads];
-        for (int i = 0; i < numThreads; i++)
-            subset[i] = new ArrayList<>();
-
-        int threadCount = 0;
-
-        for (String s : datasets) {
-            if (Application.scalabilityLengthRatio == 0) {
-                for (int i = 1; i <= 10; i++) {
-                    subset[threadCount].add(new StrDouble(s, 1.0 * i / 10));
-                    threadCount++;
-                    if (threadCount == numThreads) threadCount = 0;
+        switch (Application.problem) {
+            case "all":
+                for (String problem : TimeSeriesDatasets.longDatasets)
+                    if (Application.scalabilityLengthRatio == 0) {
+                        for (int i = 1; i <= 10; i++) {
+                            singleRun(problem, 1.0 * i / 10);
+                        }
+                    } else {
+                        singleRun(problem, Application.scalabilityLengthRatio);
+                    }
+                break;
+            default:
+                if (Application.scalabilityLengthRatio == 0) {
+                    for (int i = 1; i <= 10; i++) {
+                        singleRun(Application.problem, 1.0 * i / 10);
+                    }
+                } else {
+                    singleRun(Application.problem, Application.scalabilityLengthRatio);
                 }
-            } else {
-                subset[threadCount].add(new StrDouble(s, Application.scalabilityLengthRatio));
-                threadCount++;
-            }
+                break;
         }
-        for (int i = 0; i < numThreads; i++) {
-            String[] tmp = new String[subset[i].size()];
-            double[] tmp2 = new double[subset[i].size()];
-            for (int j = 0; j < subset[i].size(); j++) {
-                tmp[j] = subset[i].get(j).str;
-                tmp2[j] = subset[i].get(j).value;
-            }
-            tasks.add(new ScalabilityLengthTask(tmp, i, tmp2));
-        }
-        MultiThreadedTask.invokeParallelTasks(tasks, parallelTasks);
-        parallelTasks.getExecutor().shutdown();
 
         final long endTime = System.nanoTime();
         println("[" + moduleName + "] Total time taken " + doTimeNs(endTime - startTime));
+    }
+
+    private static void singleRun(String problem, double ratio) throws Exception {
+        String outputPath = Objects.requireNonNullElseGet(Application.outputPath, () -> System.getProperty("user.dir") + "/outputs/scalability_length/");
+        if (Application.paramId > 0)
+            outputPath = outputPath +
+                    Application.classifierName + "_" +
+                    Application.paramId + "/" +
+                    Application.iteration + "/" +
+                    problem;
+        else
+            outputPath = outputPath +
+                    Application.classifierName + "/" +
+                    Application.iteration + "/" +
+                    problem;
+
+        println("[" + moduleName + "] Problem: " + problem + " -- " + ratio);
+        DatasetLoader loader = new DatasetLoader();
+        Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm);
+
+        trainData.chopSeries(ratio);
+
+        println("[" + moduleName + "] Problem: " + problem + " -- " + trainData.length());
+
+        if (Application.iteration == 0) {
+            trainData.shuffle(0);
+        }
+
+        TimeSeriesClassifier classifier = Application.initTSC(trainData);
+        if (Application.verbose > 1)
+            println(classifier);
+
+        TrainingClassificationResults trainingResults = classifier.fit(trainData);
+        trainingResults.problem = problem;
+        if (Application.verbose > 1)
+            println("[" + moduleName + "]" + trainingResults);
+
+        if (Application.doEvaluation) {
+            Sequences testData = loader.readUCRTest(problem, Application.datasetPath, Application.znorm);
+            testData.chopSeries(ratio);
+            if (Application.iteration == 0) {
+                testData.shuffle(0);
+            }
+            ClassificationResults classificationResults = classifier.evaluate(testData);
+            classificationResults.problem = problem;
+            if (Application.verbose > 1)
+                println("[" + moduleName + "]" + classificationResults);
+
+            double totalTime = trainingResults.elapsedTimeNanoSeconds + classificationResults.elapsedTimeNanoSeconds;
+            if (Application.verbose > 1)
+                println("[" + moduleName + "] Total time taken " + totalTime);
+
+            Application.saveResults(
+                    outputPath,
+                    trainingResults,
+                    classificationResults,
+                    "results_" + ratio + ".csv");
+        } else {
+            Application.saveResults(
+                    outputPath,
+                    trainingResults,
+                    "results_" + ratio + ".csv");
+        }
     }
 }

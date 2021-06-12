@@ -11,22 +11,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * DTW-1NN with FastCV training and Lb Keogh
+ * FastWWSearch with early abandon
+ * Code from "Efficient search of the best warping window for dynamic time warping"
  */
 public class FastWWSearchEA extends DTW1NNLbKeogh {
     public FastWWSearchEA() {
         super();
-        this.classifierIdentifier = "DTW_1NN-FastCV_EA-LbKeogh";
+        this.classifierIdentifier = "FastWWSearchEA-LbKeogh";
     }
 
     public FastWWSearchEA(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "DTW_1NN-FastCV_EA-LbKeogh";
+        this.classifierIdentifier = "FastWWSearchEA-LbKeogh";
     }
 
     public FastWWSearchEA(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "DTW_1NN-FastCV_EA-LbKeogh";
+        this.classifierIdentifier = "FastWWSearchEA-LbKeogh";
     }
 
     @Override

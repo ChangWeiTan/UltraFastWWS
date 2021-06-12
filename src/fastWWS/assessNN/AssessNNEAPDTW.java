@@ -5,16 +5,20 @@ import distances.EAPDTW;
 import fastWWS.SequenceStatsCache;
 import results.WarpingPathResults;
 
-public class LazyAssessNNEAPDTW_nolb extends LazyAssessNN {
+/**
+ * AssessNN with EAP
+ * No lowerbounds
+ */
+public class AssessNNEAPDTW extends LazyAssessNN {
     private final EAPDTW dtwComputer = new EAPDTW();
 
-    public LazyAssessNNEAPDTW_nolb(final SequenceStatsCache cache) {
+    public AssessNNEAPDTW(final SequenceStatsCache cache) {
         super(cache);
     }
 
-    public LazyAssessNNEAPDTW_nolb(final Sequence query, final int index,
-                                   final Sequence reference, final int indexReference,
-                                   final SequenceStatsCache cache) {
+    public AssessNNEAPDTW(final Sequence query, final int index,
+                          final Sequence reference, final int indexReference,
+                          final SequenceStatsCache cache) {
         super(query, index, reference, indexReference, cache);
         this.bestMinDist = minDist;
         this.status = LBStatus.None;
@@ -97,9 +101,6 @@ public class LazyAssessNNEAPDTW_nolb extends LazyAssessNN {
             case Previous_DTW:
             case Partial_DTW:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
-//                if (status==LBStatus.Partial_DTW){
-//                    System.out.println(indexQuery + "," + indexReference + "," + scoreToBeat + "," + w + "," + bestSoFar);
-//                }
                 final WarpingPathResults res = dtwComputer.distanceExt(
                         query.data[0],
                         reference.data[0],

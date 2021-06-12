@@ -4,29 +4,30 @@ import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNEAPDTW_nolb;
+import fastWWS.assessNN.AssessNNEAPDTW;
 import results.TrainingClassificationResults;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * EAPDTW-1NN with FastCV training with Lb Keogh
+ * FastWWSearch EAPDTW-1NN without lower bounds
+ * Without early abandon
  */
 public class EAPFastWWSearchNoLb extends EAPDTW1NNLbKeogh {
     public EAPFastWWSearchNoLb() {
         super();
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_NoLB-LbKeogh";
+        this.classifierIdentifier = "EAPFastWWSearchNoLb-LbKeogh";
     }
 
     public EAPFastWWSearchNoLb(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_NoLB-LbKeogh";
+        this.classifierIdentifier = "EAPFastWWSearchNoLb-LbKeogh";
     }
 
     public EAPFastWWSearchNoLb(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_NoLB-LbKeogh";
+        this.classifierIdentifier = "EAPFastWWSearchNoLb-LbKeogh";
     }
 
     @Override
@@ -49,18 +50,18 @@ public class EAPFastWWSearchNoLb extends EAPDTW1NNLbKeogh {
         }
         classCounts = new int[nParams][train.size()][train.getNumClasses()];
 
-        final LazyAssessNNEAPDTW_nolb[] lazyAssessNNS = new LazyAssessNNEAPDTW_nolb[train.size()];
+        final AssessNNEAPDTW[] lazyAssessNNS = new AssessNNEAPDTW[train.size()];
         for (int i = 0; i < train.size(); ++i) {
-            lazyAssessNNS[i] = new LazyAssessNNEAPDTW_nolb(cache);
+            lazyAssessNNS[i] = new AssessNNEAPDTW(cache);
         }
-        final ArrayList<LazyAssessNNEAPDTW_nolb> challengers = new ArrayList<>(train.size());
+        final ArrayList<AssessNNEAPDTW> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
             final Sequence sCurrent = train.get(current);
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final LazyAssessNNEAPDTW_nolb d = lazyAssessNNS[previous];
+                final AssessNNEAPDTW d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
@@ -78,11 +79,11 @@ public class EAPFastWWSearchNoLb extends EAPDTW1NNLbKeogh {
 
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
-                        final LazyAssessNNEAPDTW_nolb challenger = lazyAssessNNS[previous];
-                        final LazyAssessNNEAPDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, Double.POSITIVE_INFINITY);
+                        final AssessNNEAPDTW challenger = lazyAssessNNS[previous];
+                        final AssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, Double.POSITIVE_INFINITY);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
                             final double d = challenger.getDistance(win);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
@@ -100,16 +101,16 @@ public class EAPFastWWSearchNoLb extends EAPDTW1NNLbKeogh {
                     // Sort the challengers so we have the better chance to organize the good pruning.
                     Collections.sort(challengers);
 
-                    for (LazyAssessNNEAPDTW_nolb challenger : challengers) {
+                    for (AssessNNEAPDTW challenger : challengers) {
                         final int previous = challenger.indexQuery;
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- First we want to beat the current best candidate:
                         double toBeat = currPNN.distance;
-                        LazyAssessNNEAPDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, Double.POSITIVE_INFINITY);
+                        AssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, Double.POSITIVE_INFINITY);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
                             final double d = challenger.getDistance(win);
                             currPNN.set(previous, r, d, CandidateNN.Status.BC);
@@ -128,7 +129,7 @@ public class EAPFastWWSearchNoLb extends EAPDTW1NNLbKeogh {
                         rrt = challenger.tryToBeat(toBeat, win, Double.POSITIVE_INFINITY);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
                             final double d = challenger.getDistance(win);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);

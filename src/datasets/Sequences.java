@@ -122,16 +122,6 @@ public class Sequences {
         }
     }
 
-    public Sequence remove(final int i) {
-        // todo update min,max length
-        Sequence instance = this.timeseriesData.get(i);
-        final int label = instance.classificationLabel;
-        final Sequence removedSeries = this.timeseriesData.get(i);
-        this.timeseriesData.remove(i);
-        this.classMap.put(label, this.classMap.get(label) - 1);
-        return removedSeries;
-    }
-
     public Sequence get(final int i) {
         return this.timeseriesData.get(i);
     }
@@ -155,25 +145,8 @@ public class Sequences {
         }
     }
 
-    public void shuffle() {
-        Collections.shuffle(this.timeseriesData);
-    }
-
     public void shuffle(int seed) {
         Collections.shuffle(this.timeseriesData, new Random(seed));
-    }
-
-    public Sequences subset(double ratio) {
-        int subsetSize = (int) (ratio * timeseriesData.size());
-        Sequences subsetData = new Sequences(this);
-        subsetData.timeseriesData = new ArrayList<>(subsetSize);
-        subsetData.classMap = new TIntIntHashMap();
-
-        for (int i = 0; i < subsetSize; i++) {
-            subsetData.add(this.get(i));
-        }
-
-        return subsetData;
     }
 
     public Sequences stratifySubset(double ratio) {

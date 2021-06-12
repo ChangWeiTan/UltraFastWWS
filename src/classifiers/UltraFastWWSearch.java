@@ -4,7 +4,7 @@ import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNEAPDTW_nolb;
+import fastWWS.assessNN.AssessNNEAPDTW;
 import results.TrainingClassificationResults;
 
 import java.util.ArrayList;
@@ -12,25 +12,23 @@ import java.util.Collections;
 import java.util.stream.IntStream;
 
 /**
- * EAPDTW-1NN with FastCV training with Lb Keogh
- * EAPDTW-1NN with FastCV EA NoLb.
- * Set UB = Euclidean Distance for the first one
- * Then UB = max(prevNN, currNN) for the others
+ * UltraFastWWSearch
+ * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
 public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
     public UltraFastWWSearch() {
         super();
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA_NoLB-LbKeoghV1-NNOrderV2";
+        this.classifierIdentifier = "UltraFastWWSearch";
     }
 
     public UltraFastWWSearch(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA_NoLB-LbKeoghV1-NNOrderV2";
+        this.classifierIdentifier = "UltraFastWWSearch";
     }
 
     public UltraFastWWSearch(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "EAPDTW_1NN-FastCV_EA_NoLB-LbKeoghV1-NNOrderV2";
+        this.classifierIdentifier = "UltraFastWWSearch";
     }
 
     @Override
@@ -56,11 +54,11 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
         }
         classCounts = new int[nParams][train.size()][train.getNumClasses()];
 
-        final LazyAssessNNEAPDTW_nolb[] lazyAssessNNS = new LazyAssessNNEAPDTW_nolb[train.size()];
+        final AssessNNEAPDTW[] lazyAssessNNS = new AssessNNEAPDTW[train.size()];
         for (int i = 0; i < train.size(); ++i) {
-            lazyAssessNNS[i] = new LazyAssessNNEAPDTW_nolb(cache);
+            lazyAssessNNS[i] = new AssessNNEAPDTW(cache);
         }
-        final ArrayList<LazyAssessNNEAPDTW_nolb> challengers = new ArrayList<>(train.size());
+        final ArrayList<AssessNNEAPDTW> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
             int maxWindowValidity = 0;
@@ -68,7 +66,7 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final LazyAssessNNEAPDTW_nolb d = lazyAssessNNS[previous];
+                final AssessNNEAPDTW d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
@@ -90,7 +88,7 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
             CandidateNN currPNN = nnArr[current];
             for (int i = 0; i < sortedIndices.length; i++) {
                 int sortedIdx = sortedIndices[i];
-                LazyAssessNNEAPDTW_nolb challenger = challengers.get(sortedIdx);
+                AssessNNEAPDTW challenger = challengers.get(sortedIdx);
                 final int previous = challenger.indexQuery;
                 final CandidateNN prevNN = candidateNNS[paramId][previous];
 
@@ -102,10 +100,10 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                 } else {
                     bestSoFar = Math.max(toBeat, prevNN.distance);
                 }
-                LazyAssessNNEAPDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
+                AssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                 // --- Check the result
-                if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                     final int r = challenger.getMinWindowValidityForFullDistance();
                     final double d = challenger.getDistance(win);
                     currPNN.set(previous, r, d, CandidateNN.Status.BC);
@@ -121,16 +119,10 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                 // --- Try to beat the previous best NN
                 toBeat = prevNN.distance;
                 challenger = lazyAssessNNS[previous];
-                if (toBeat == Double.POSITIVE_INFINITY) {
-                    challenger.tryEuclidean();
-                    bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                } else {
-                    bestSoFar = Math.max(toBeat, currPNN.distance);
-                }
                 rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                 // --- Check the result
-                if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                     final int r = challenger.getMinWindowValidityForFullDistance();
                     final double d = challenger.getDistance(win);
                     final int winEnd = getParamIdFromWindow(r, train.length());
@@ -178,7 +170,7 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                     // --- --- WITH NN CASE --- ---
                     // We already have the NN for sure, but we still have to check if current is the new NN for previous
                     for (int i = 0; i < current; ++i) {
-                        final LazyAssessNNEAPDTW_nolb challenger = challengers.get(i);
+                        final AssessNNEAPDTW challenger = challengers.get(i);
                         int previous = challenger.indexQuery;
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
@@ -187,15 +179,13 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                         if (toBeat == Double.POSITIVE_INFINITY) {
                             challenger.tryEuclidean();
                             bestSoFar = challenger.euclideanDistance;
-//                            bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
                         } else {
                             bestSoFar = toBeat;
-//                            bestSoFar = Math.max(toBeat, currPNN.distance);
                         }
-                        final LazyAssessNNEAPDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
+                        final AssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                             r = challenger.getMinWindowValidityForFullDistance();
                             d = challenger.getDistance(win);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
@@ -210,7 +200,7 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                 } else {
                     // --- --- WITHOUT NN CASE --- ---
                     // We don't have the NN yet.
-                    LazyAssessNNEAPDTW_nolb challenger = challengers.get(nnAtPreviousWindow);
+                    AssessNNEAPDTW challenger = challengers.get(nnAtPreviousWindow);
                     int previous = challenger.indexQuery;
                     CandidateNN prevNN = candidateNNS[paramId][previous];
 
@@ -222,10 +212,10 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                     } else {
                         bestSoFar = Math.max(toBeat, prevNN.distance);
                     }
-                    LazyAssessNNEAPDTW_nolb.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
+                    AssessNNEAPDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                     // --- Check the result
-                    if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                    if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                         r = challenger.getMinWindowValidityForFullDistance();
                         d = challenger.getDistance(win);
                         currPNN.set(previous, r, d, CandidateNN.Status.BC);
@@ -241,16 +231,10 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                     // --- Try to beat the previous best NN
                     toBeat = prevNN.distance;
                     challenger = lazyAssessNNS[previous];
-                    if (toBeat == Double.POSITIVE_INFINITY) {
-                        challenger.tryEuclidean();
-                        bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                    } else {
-                        bestSoFar = Math.max(toBeat, currPNN.distance);
-                    }
                     rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                     // --- Check the result
-                    if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                    if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                         r = challenger.getMinWindowValidityForFullDistance();
                         d = challenger.getDistance(win);
                         prevNN.set(current, r, d, CandidateNN.Status.NN);
@@ -282,7 +266,7 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                         rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                             r = challenger.getMinWindowValidityForFullDistance();
                             d = challenger.getDistance(win);
                             currPNN.set(previous, r, d, CandidateNN.Status.BC);
@@ -299,16 +283,10 @@ public class UltraFastWWSearch extends EAPDTW1NNLbKeogh {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        if (toBeat == Double.POSITIVE_INFINITY) {
-                            challenger.tryEuclidean();
-                            bestSoFar = Math.min(challenger.euclideanDistance, currPNN.distance);
-                        } else {
-                            bestSoFar = Math.max(toBeat, currPNN.distance);
-                        }
                         rrt = challenger.tryToBeat(toBeat, win, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNEAPDTW_nolb.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPDTW.RefineReturnType.New_best) {
                             r = challenger.getMinWindowValidityForFullDistance();
                             d = challenger.getDistance(win);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);

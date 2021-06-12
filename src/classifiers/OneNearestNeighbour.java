@@ -257,7 +257,6 @@ public abstract class OneNearestNeighbour extends TimeSeriesClassifier {
 
     /**
      * Do FastWWSearch
-     * Code from "Efficient search of the best warping window for dynamic time warping"
      *
      * @param train training dataset
      * @return training results

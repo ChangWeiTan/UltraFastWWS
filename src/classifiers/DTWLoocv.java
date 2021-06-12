@@ -4,7 +4,7 @@ import datasets.Sequences;
 import results.TrainingClassificationResults;
 
 /**
- * DTW-1NN with LOOCV training and Lb Keogh
+ * DTW-1NN with LOOCV training and LbKeogh
  */
 public class DTWLoocv extends DTW1NNLbKeogh {
     public DTWLoocv() {
