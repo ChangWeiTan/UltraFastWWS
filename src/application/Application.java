@@ -16,7 +16,6 @@ public class Application {
     public static int paramId = 0;
     public static int verbose = 0;
     public static boolean znorm = true;
-    public static int numThreads = 0;
     public static int iteration = 0;
     public static double scalabilityTrainRatio = 0;
     public static double scalabilityLengthRatio = 0;
@@ -50,9 +49,6 @@ public class Application {
                         break;
                     case "-classifier":
                         classifierName = options[1];
-                        break;
-                    case "-cpu":
-                        numThreads = Integer.parseInt(options[1]);
                         break;
                     case "-iter":
                         iteration = Integer.parseInt(options[1]);
