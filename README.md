@@ -79,5 +79,5 @@ distances,” arXiv preprint arXiv:2102.05221, 2021.
 
 [3] H. A. Dau, E. Keogh, K. Kamgar, C.-C. M. Yeh, Y. Zhu, S. Gharghabi,
 C. A. Ratanamahatana, Yanping, B. Hu, N. Begum, A. Bagnall,
-A. Mueen, G. Batista, and Hexagon-ML, “The UCR time series classification archive,” October 2018, https://www.cs.ucr.edu/∼eamonn/time
+A. Mueen, G. Batista, and Hexagon-ML, “The UCR time series classification archive,” October 2018, https://www.cs.ucr.edu/∼eamonn/time
 series data 2018/.
