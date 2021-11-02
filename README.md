@@ -70,14 +70,11 @@ It is also scalable on large and especially long datasets, compared to FastWWSea
 
 
 ## References
-[1] C. W. Tan, M. Herrmann, G. Forestier, G. I. Webb, and F. Petitjean,
-“Efficient search of the best warping window for dynamic time warping,”
-in Proc. 2018 SIAM Int. Conf. Data Mining. SIAM, 2018, pp. 225–233.
+[1] Tan, C. W., Herrmann, M., Forestier, G., Webb, G. I., & Petitjean, F. (2018, May). Efficient search of the best warping window for dynamic time warping. In Proceedings of the 2018 SIAM International Conference on Data Mining (pp. 225-233). Society for Industrial and Applied Mathematics.
 
-[2] M. Herrmann and G. I. Webb, “Early abandoning and pruning for elastic
-distances,” arXiv preprint arXiv:2102.05221, 2021.
+[2] Herrmann, M., & Webb, G. I. (2021). Early abandoning and pruning for elastic distances including dynamic time warping. Data Mining and Knowledge Discovery, 1-25.
 
-[3] H. A. Dau, E. Keogh, K. Kamgar, C.-C. M. Yeh, Y. Zhu, S. Gharghabi,
-C. A. Ratanamahatana, Yanping, B. Hu, N. Begum, A. Bagnall,
-A. Mueen, G. Batista, and Hexagon-ML, “The UCR time series classification archive,” October 2018, https://www.cs.ucr.edu/∼eamonn/time
-series data 2018/.
+[3] Dau, H. A., Keogh, E., Kamgar, K., Yeh, C.-C. M., Zhu Y., Gharghabi, S.,
+Ratanamahatana, C. A.,Chen, Y., Hu, B., Begum, N., Bagnall A.,
+Mueen, A., Batista, G., and Hexagon-ML, “The UCR time series classification archive,” October 2018,
+https://www.cs.ucr.edu/~eamonn/time_series_data_2018/.
