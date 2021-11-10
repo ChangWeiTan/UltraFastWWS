@@ -126,18 +126,63 @@ public class Sequences {
         return this.timeseriesData.get(i);
     }
 
+    public void setLargestClass(int largestClass) {
+        this.largestClass = largestClass;
+    }
+
+    public void setInitialClassOrder(final Map<Integer, Integer> initialOrder) {
+        this.initialClassLabels = initialOrder;
+    }
+
+    public void setReordered(final boolean status) {
+        this.isReordered = status;
+    }
+
+    public Map<Integer, Integer> getInitialClassLabels() {
+        return this.initialClassLabels;
+    }
+
+    public Sequences reorderClassLabels(Map<Integer, Integer> newOrder) {
+        final Sequences newDataset = new Sequences(this);
+        newDataset.classMap = new TIntIntHashMap();
+        //key = old label, value = new label, easier to build this way, later we swap to new=>old
+        if (newOrder == null) {
+            newOrder = new HashMap<>();
+        }
+
+        int newLabel = 0;
+        for (int oldLabel : classMap.keys()) {
+            newOrder.put(oldLabel, newLabel);
+            newLabel++;
+        }
+
+        final int size = this.size();
+        for (int i = 0; i < size; i++) {
+            final Integer oldLabel = this.timeseriesData.get(i).classificationLabel;
+            this.timeseriesData.get(i).classificationLabel = newOrder.get(oldLabel);
+            newDataset.add(this.timeseriesData.get(i));
+        }
+
+        newDataset.setInitialClassOrder(newOrder);
+        newDataset.setReordered(true);
+        newDataset.problem = this.problem;
+        newDataset.datasetType = this.datasetType;
+        newDataset.setLargestClass(newLabel);
+        return newDataset;
+    }
+
     public void reorderClass() {
-        int count = 0;
         boolean saveInitClassLabel = false;
         if (this.initialClassLabels == null) {
             this.initialClassLabels = new HashMap<>();
             saveInitClassLabel = true;
         }
+        int newLabel = 0;
         TIntIntMap newClassMap = new TIntIntHashMap(this.classMap.size());
-        for (int label : this.classMap.keys()) {
-            newClassMap.put(count, this.classMap.get(label));
-            if (saveInitClassLabel) this.initialClassLabels.put(label, count);
-            count++;
+        for (int oldLabel : this.classMap.keys()) {
+            newClassMap.put(newLabel, this.classMap.get(oldLabel));
+            if (saveInitClassLabel) this.initialClassLabels.put(oldLabel, newLabel);
+            newLabel++;
         }
         this.classMap = newClassMap;
         for (Sequence timeseriesDatum : timeseriesData) {

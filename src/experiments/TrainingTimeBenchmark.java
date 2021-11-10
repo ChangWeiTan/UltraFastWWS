@@ -16,7 +16,7 @@ public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
             "-problem=test",
-            "-classifier=UltraFastWWSearch", // see classifiers in TimeSeriesClassifier.java
+            "-classifier=UltraFastWWSearchFull", // see classifiers in TimeSeriesClassifier.java
             "-paramId=99",
             "-cpu=-1",
             "-verbose=1",

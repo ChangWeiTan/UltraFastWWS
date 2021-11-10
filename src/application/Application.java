@@ -6,6 +6,8 @@ import fileIO.OutFile;
 import results.ClassificationResults;
 import results.TrainingClassificationResults;
 
+import java.io.File;
+
 public class Application {
     public static Runtime runtime = Runtime.getRuntime();   // get the run time of the application
     public static final String optionsSep = "=";
@@ -16,7 +18,9 @@ public class Application {
     public static int paramId = 0;
     public static int verbose = 0;
     public static boolean znorm = true;
+    public static boolean retrain = true;
     public static int iteration = 0;
+    public static int numThreads = 0;
     public static double scalabilityTrainRatio = 0;
     public static double scalabilityLengthRatio = 0;
     public static boolean doEvaluation = true;
@@ -46,6 +50,9 @@ public class Application {
                         break;
                     case "-znorm":
                         znorm = Boolean.parseBoolean(options[1]);
+                        break;
+                    case "-cpu":
+                        numThreads = Integer.parseInt(options[1]);
                         break;
                     case "-classifier":
                         classifierName = options[1];
@@ -94,6 +101,11 @@ public class Application {
     public static TimeSeriesClassifier initTSC(final Sequences trainData) {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
+            case "UltraFastWWSearchFull":
+                // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
+                classifier = new UltraFastWWSearchFULL(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastWWSearchV2":
                 // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
                 classifier = new UltraFastWWSearchV2(paramId, trainData);
@@ -284,6 +296,11 @@ public class Application {
 
 
         outFile.closeFile();
+    }
+
+    public static boolean isDatasetDone(String outputPath) {
+        File f1 = new File(outputPath + defaultSaveFilename);
+        return f1.exists() && !f1.isDirectory();
     }
 
     public static void printSummary(String moduleName) {
