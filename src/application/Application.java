@@ -107,6 +107,10 @@ public class Application {
                 classifier = new FastWDTW(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
                 break;
+            case "EAPWDTWLOOCV":
+                classifier = new EAPWDTWLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
             case "WDTWLOOCV":
                 classifier = new WDTWLoocv(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;

@@ -15,8 +15,8 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=BirdChicken",
-            "-classifier=FastWDTW", // see classifiers in TimeSeriesClassifier.java
+            "-problem=Car",
+            "-classifier=EAPWDTWLOOCV", // see classifiers in TimeSeriesClassifier.java
             "-paramId=-1",
             "-cpu=-1",
             "-verbose=1",
