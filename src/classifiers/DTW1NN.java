@@ -2,7 +2,7 @@ package classifiers;
 
 import datasets.Sequence;
 import datasets.Sequences;
-import distances.DTW;
+import distances.classic.DTW;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
 import fastWWS.assessNN.LazyAssessNNDTW;

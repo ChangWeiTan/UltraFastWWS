@@ -2,6 +2,7 @@ package application;
 
 import classifiers.*;
 import datasets.Sequences;
+import distances.ElasticDistances;
 import fileIO.OutFile;
 import results.ClassificationResults;
 import results.TrainingClassificationResults;
@@ -101,6 +102,17 @@ public class Application {
     public static TimeSeriesClassifier initTSC(final Sequences trainData) {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
+            /// WDTW distance
+            case "FastWDTW":
+                classifier = new FastWDTW(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "WDTWLOOCV":
+                classifier = new WDTWLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+            /// DTW distance
             case "UltraFastWWSearchFull":
                 // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
                 classifier = new UltraFastWWSearchFULL(paramId, trainData);

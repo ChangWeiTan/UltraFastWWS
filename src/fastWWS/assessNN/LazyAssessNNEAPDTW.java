@@ -1,7 +1,7 @@
 package fastWWS.assessNN;
 
 import datasets.Sequence;
-import distances.EAPDTW;
+import distances.eap.EAPDTW;
 import fastWWS.SequenceStatsCache;
 import results.WarpingPathResults;
 

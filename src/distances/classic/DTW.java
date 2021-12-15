@@ -1,5 +1,6 @@
-package distances;
+package distances.classic;
 
+import distances.ElasticDistances;
 import results.WarpingPathResults;
 import utils.GenericTools;
 

@@ -84,6 +84,7 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
         nOperationsED = 0;
         euclideanDistance = 0;
     }
+
     public void tryEuclidean() {
         while (indexStoppedED < query.length()) {
             final double diff = query.value(indexStoppedED) - reference.value(indexStoppedED);
@@ -362,6 +363,13 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
         return reference;
     }
 
+    public double getDistance() {
+        if (status == LBStatus.Full_WDTW) {
+            return minDist;
+        }
+        throw new RuntimeException("Shouldn't call getDistance if not sure there is no valid already-computed Distance");
+    }
+
     public double getDistance(final int window) {
         if ((status == LBStatus.Full_DTW) && minWindowValidity <= window) {
             return minDist;
@@ -400,6 +408,7 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
         Partial_LB_KeoghQR, Full_LB_KeoghQR, Partial_LB_KeoghRQ, Full_LB_KeoghRQ,   // DTW
         Partial_LB_Enhanced, Full_LB_Enhanced,
         Previous_LB_DTW, Previous_DTW, Full_DTW, Partial_DTW,                       // DTW
-
+        Partial_LB_WDTWQR, Partial_LB_WDTWRQ, Full_LB_WDTWQR, Full_LB_WDTWRQ,       // WDTW
+        Previous_LB_WDTW, Previous_WDTW, Full_WDTW,                                 // WDTW
     }
 }

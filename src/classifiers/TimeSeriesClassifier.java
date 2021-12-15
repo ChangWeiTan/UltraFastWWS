@@ -26,6 +26,7 @@ public abstract class TimeSeriesClassifier {
 
     public enum TrainOpts {
         LOOCV0,
+        LOOCV,
         LOOCVLB,
         FastWWS,
     }

@@ -1,5 +1,6 @@
-package distances;
+package distances.eap;
 
+import distances.ElasticDistances;
 import results.WarpingPathResults;
 
 import java.util.Arrays;

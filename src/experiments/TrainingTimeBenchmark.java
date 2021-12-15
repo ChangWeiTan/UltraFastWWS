@@ -15,18 +15,18 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=test",
-            "-classifier=UltraFastWWSearchFull", // see classifiers in TimeSeriesClassifier.java
-            "-paramId=99",
+            "-problem=BirdChicken",
+            "-classifier=FastWDTW", // see classifiers in TimeSeriesClassifier.java
+            "-paramId=-1",
             "-cpu=-1",
             "-verbose=1",
             "-iter=0",
-            "-eval=0",
+            "-eval=true",
     };
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-//        args = testArgs;
+        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
