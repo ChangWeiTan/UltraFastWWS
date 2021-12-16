@@ -20,6 +20,7 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
     double bestMinDist;                     // best so far distance
     double kimDist;
     public double euclideanDistance;
+    public double upperBoundDistance;
     public double nnDistance;
 
     LBStatus status;                        // Status of Lower Bound
@@ -102,6 +103,15 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
             indexStoppedED++;
         }
     }
+
+    public void getUpperBound() {
+        tryEuclidean();
+    }
+
+    public void getUpperBound(final double scoreToBeat) {
+        tryEuclidean(scoreToBeat);
+    }
+
 
     protected void tryLBKim() {
         final double diffFirsts = query.value(0) - reference.value(0);
@@ -409,6 +419,6 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
         Partial_LB_Enhanced, Full_LB_Enhanced,
         Previous_LB_DTW, Previous_DTW, Full_DTW, Partial_DTW,                       // DTW
         Partial_LB_WDTWQR, Partial_LB_WDTWRQ, Full_LB_WDTWQR, Full_LB_WDTWRQ,       // WDTW
-        Previous_LB_WDTW, Previous_WDTW, Full_WDTW,                                 // WDTW
+        Previous_LB_WDTW, Previous_WDTW, Full_WDTW, Partial_WDTW,                   // WDTW
     }
 }

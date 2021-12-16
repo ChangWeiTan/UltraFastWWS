@@ -8,17 +8,17 @@ import fastWWS.SequenceStatsCache;
 /**
  * LazyAssessNN with DTW
  */
-public class LazyAssessNNWDTW extends LazyAssessNN {
-    private final WDTW distComputer = new WDTW();
+public class LazyAssessNNEAPWDTW extends LazyAssessNN {
+    private final EAPWDTW distComputer = new EAPWDTW();
     protected double[] currentWeightVector;           // weight vector for WDTW
 
-    public LazyAssessNNWDTW(final SequenceStatsCache cache) {
+    public LazyAssessNNEAPWDTW(final SequenceStatsCache cache) {
         super(cache);
     }
 
-    public LazyAssessNNWDTW(final Sequence query, final int index,
-                            final Sequence reference, final int indexReference,
-                            final SequenceStatsCache cache) {
+    public LazyAssessNNEAPWDTW(final Sequence query, final int index,
+                               final Sequence reference, final int indexReference,
+                               final SequenceStatsCache cache) {
         super(query, index, reference, indexReference, cache);
         this.bestMinDist = minDist;
         this.status = LBStatus.None;
@@ -126,7 +126,7 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
                 } else status = LBStatus.Full_LB_WDTWRQ;
             case Full_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-                minDist = distComputer.distance(query.data[0], reference.data[0], weightVector);
+                minDist = distComputer.distance(query.data[0], reference.data[0], weightVector, Double.POSITIVE_INFINITY);
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:

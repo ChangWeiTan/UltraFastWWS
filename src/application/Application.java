@@ -1,8 +1,8 @@
 package application;
 
 import classifiers.*;
+import classifiers.FastWWSearch;
 import datasets.Sequences;
-import distances.ElasticDistances;
 import fileIO.OutFile;
 import results.ClassificationResults;
 import results.TrainingClassificationResults;
@@ -103,6 +103,18 @@ public class Application {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
             /// WDTW distance
+            case "UltraFastWDTW":
+                classifier = new UltraFastWDTW(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastWDTWEA":
+                classifier = new EAPFastWDTWEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastWDTW":
+                classifier = new EAPFastWDTW(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "FastWDTW":
                 classifier = new FastWDTW(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;

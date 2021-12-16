@@ -1,5 +1,6 @@
 package classifiers;
 
+import classifiers.DTW1NNLbKeogh;
 import datasets.Sequences;
 import results.TrainingClassificationResults;
 
