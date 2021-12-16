@@ -2,9 +2,11 @@ package classifiers;
 
 import datasets.Sequence;
 import datasets.Sequences;
+import distances.classic.MSM;
 import distances.classic.WDTW;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
+import fastWWS.assessNN.LazyAssessNNMSM;
 import fastWWS.assessNN.LazyAssessNNWDTW;
 import results.TrainingClassificationResults;
 
@@ -12,43 +14,131 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Super class for DTW-1NN
- * DTW-1NN with no lower bounds
+ * Super class for MSM-1NN
+ * MSM-1NN with no lower bounds
  */
-public class WDTW1NN extends OneNearestNeighbour {
-    protected static final double WEIGHT_MAX = 1;
-    protected double g = 0;                    // g value
-    protected double[] weightVector;           // weights vector
-    protected boolean refreshWeights = true;   // indicator if we refresh the params
-    protected WDTW distComputer = new WDTW();
+public class MSM1NN extends OneNearestNeighbour {
+    // parameters
+    private static double[] msmParams = {
+            // <editor-fold defaultstate="collapsed" desc="hidden for space">
+            0.01,
+            0.01375,
+            0.0175,
+            0.02125,
+            0.025,
+            0.02875,
+            0.0325,
+            0.03625,
+            0.04,
+            0.04375,
+            0.0475,
+            0.05125,
+            0.055,
+            0.05875,
+            0.0625,
+            0.06625,
+            0.07,
+            0.07375,
+            0.0775,
+            0.08125,
+            0.085,
+            0.08875,
+            0.0925,
+            0.09625,
+            0.1,
+            0.136,
+            0.172,
+            0.208,
+            0.244,
+            0.28,
+            0.316,
+            0.352,
+            0.388,
+            0.424,
+            0.46,
+            0.496,
+            0.532,
+            0.568,
+            0.604,
+            0.64,
+            0.676,
+            0.712,
+            0.748,
+            0.784,
+            0.82,
+            0.856,
+            0.892,
+            0.928,
+            0.964,
+            1,
+            1.36,
+            1.72,
+            2.08,
+            2.44,
+            2.8,
+            3.16,
+            3.52,
+            3.88,
+            4.24,
+            4.6,
+            4.96,
+            5.32,
+            5.68,
+            6.04,
+            6.4,
+            6.76,
+            7.12,
+            7.48,
+            7.84,
+            8.2,
+            8.56,
+            8.92,
+            9.28,
+            9.64,
+            10,
+            13.6,
+            17.2,
+            20.8,
+            24.4,
+            28,
+            31.6,
+            35.2,
+            38.8,
+            42.4,
+            46,
+            49.6,
+            53.2,
+            56.8,
+            60.4,
+            64,
+            67.6,
+            71.2,
+            74.8,
+            78.4,
+            82,
+            85.6,
+            89.2,
+            92.8,
+            96.4,
+            100// </editor-fold>
+    };  // MSM pre-defined c values
+    private double c = 0;                               // c value
+    protected MSM distComputer = new MSM();
 
-    protected void initWeights(int seriesLength) {
-        weightVector = new double[seriesLength];
-        double halfLength = (double) seriesLength / 2;
-
-        for (int i = 0; i < seriesLength; i++) {
-            weightVector[i] = WEIGHT_MAX / (1 + Math.exp(-g * (i - halfLength)));
-        }
-        refreshWeights = false;
-    }
-
-    public WDTW1NN() {
-        this.classifierIdentifier = "WDTW-1NN_R1";
+    public MSM1NN() {
+        this.classifierIdentifier = "MSM-1NN_R1";
         this.trainingOptions = TrainOpts.LOOCV0;
     }
 
-    public WDTW1NN(final Sequences trainData) {
+    public MSM1NN(final Sequences trainData) {
         this.setTrainingData(trainData);
-        initWeights(trainData.length());
-        this.classifierIdentifier = "WDTW-1NN_R1";
+        this.classifierIdentifier = "MSM-1NN_R1";
         this.trainingOptions = TrainOpts.LOOCV0;
     }
 
-    public WDTW1NN(final int paramId, final Sequences trainData) {
-        this.classifierIdentifier = "WDTW-1NN_R1";
+    public MSM1NN(final int paramId, final Sequences trainData) {
+        this.classifierIdentifier = "MSM-1NN_R1";
         this.setTrainingData(trainData);
-        g = (double) paramId / 100;
-        refreshWeights = true;
         this.setParamsFromParamId(paramId);
         this.bestParamId = paramId;
         this.trainingOptions = TrainOpts.LOOCV0;
@@ -62,18 +152,18 @@ public class WDTW1NN extends OneNearestNeighbour {
     public String toString() {
         return "[CLASSIFIER SUMMARY] Classifier: " + this.classifierIdentifier +
                 "\n[CLASSIFIER SUMMARY] training_opts: " + trainingOptions +
-                "\n[CLASSIFIER SUMMARY] g: " + g +
+                "\n[CLASSIFIER SUMMARY] c: " + c +
                 "\n[CLASSIFIER SUMMARY] best_param: " + bestParamId;
     }
 
     @Override
     public double distance(final Sequence first, final Sequence second) {
-        return distComputer.distance(first.data[0], second.data[0], weightVector);
+        return distComputer.distance(first.data[0], second.data[0], this.c);
     }
 
     @Override
     public double distance(final Sequence first, final Sequence second, final double cutOffValue) {
-        return distComputer.distance(first.data[0], second.data[0], weightVector, cutOffValue);
+        return distComputer.distance(first.data[0], second.data[0], this.c, cutOffValue);
     }
 
     @Override
@@ -98,32 +188,26 @@ public class WDTW1NN extends OneNearestNeighbour {
             }
         }
         classCounts = new int[nParams][train.size()][train.getNumClasses()];
-        boolean[] vectorCreated = new boolean[nParams];
-        double[][] weightVectors = new double[nParams][maxWindow];
 
-        final LazyAssessNNWDTW[] lazyAssessNNS = new LazyAssessNNWDTW[train.size()];
+        final LazyAssessNNMSM[] lazyAssessNNS = new LazyAssessNNMSM[train.size()];
         for (int i = 0; i < train.size(); ++i) {
-            lazyAssessNNS[i] = new LazyAssessNNWDTW(cache);
+            lazyAssessNNS[i] = new LazyAssessNNMSM(cache);
         }
-        final ArrayList<LazyAssessNNWDTW> challengers = new ArrayList<>(train.size());
+        final ArrayList<LazyAssessNNMSM> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
             final Sequence sCurrent = train.get(current);
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final LazyAssessNNWDTW d = lazyAssessNNS[previous];
+                final LazyAssessNNMSM d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
 
-            for (int paramId = nParams - 1; paramId > -1; --paramId) {
+            for (int paramId = 0; paramId < nParams; ++paramId) {
                 setParamsFromParamId(paramId);
-                if (!vectorCreated[paramId]) {
-                    initWeights(sCurrent.length());
-                    weightVectors[paramId] = weightVector;
-                    vectorCreated[paramId] = true;
-                }
+
                 final CandidateNN currPNN = candidateNNS[paramId][current];
 
                 if (currPNN.isNN()) {
@@ -134,11 +218,11 @@ public class WDTW1NN extends OneNearestNeighbour {
 
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
-                        final LazyAssessNNWDTW challenger = lazyAssessNNS[previous];
-                        final LazyAssessNNWDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, weightVectors[paramId]);
+                        final LazyAssessNNMSM challenger = lazyAssessNNS[previous];
+                        final LazyAssessNNMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, this.c);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNWDTW.RefineReturnType.New_best) {
+                        if (rrt == LazyAssessNNMSM.RefineReturnType.New_best) {
                             final double d = challenger.getDistance();
                             prevNN.set(current, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
@@ -155,16 +239,16 @@ public class WDTW1NN extends OneNearestNeighbour {
                     // Sort the challengers so we have the better chance to organize the good pruning.
                     Collections.sort(challengers);
 
-                    for (LazyAssessNNWDTW challenger : challengers) {
+                    for (LazyAssessNNMSM challenger : challengers) {
                         final int previous = challenger.indexQuery;
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- First we want to beat the current best candidate:
                         double toBeat = currPNN.distance;
-                        LazyAssessNNWDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, weightVectors[paramId]);
+                        LazyAssessNNMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, this.c);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNWDTW.RefineReturnType.New_best) {
+                        if (rrt == LazyAssessNNMSM.RefineReturnType.New_best) {
                             final double d = challenger.getDistance();
                             currPNN.set(previous, d, CandidateNN.Status.BC);
                             if (d < toBeat) {
@@ -179,10 +263,10 @@ public class WDTW1NN extends OneNearestNeighbour {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        rrt = challenger.tryToBeat(toBeat, weightVectors[paramId]);
+                        rrt = challenger.tryToBeat(toBeat, this.c);
 
                         // --- Check the result
-                        if (rrt == LazyAssessNNWDTW.RefineReturnType.New_best) {
+                        if (rrt == LazyAssessNNMSM.RefineReturnType.New_best) {
                             final double d = challenger.getDistance();
                             prevNN.set(current, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
@@ -197,8 +281,17 @@ public class WDTW1NN extends OneNearestNeighbour {
                     // --- When we looked at every past sequences,
                     // the current best candidate is really the best one, so the NN.
                     // So assign the current NN to all the windows that are valid
-                    candidateNNS[paramId][current].set(currPNN.nnIndex, currPNN.distance, CandidateNN.Status.NN);
-                    classCounts[paramId][current] = classCounts[paramId][current].clone();
+                    if (paramId > 0) {
+                        double currD = currPNN.distance;
+                        double prevD = candidateNNS[paramId - 1][current].distance;
+                        int index = currPNN.nnIndex;
+                        if (currD == prevD) {
+                            for (int j = paramId; j < nParams; j++) {
+                                candidateNNS[j][current].set(index, currD, CandidateNN.Status.NN);
+                                classCounts[j][current] = classCounts[paramId][current].clone();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -217,13 +310,11 @@ public class WDTW1NN extends OneNearestNeighbour {
         if (paramId < 100 && this.classifierIdentifier.contains("R1")) {
             this.classifierIdentifier = this.classifierIdentifier.replace("R1", "Rn");
         }
-        g = (double) paramId / 100;
-        refreshWeights = true;
-        initWeights(trainData.length());
+        this.c = msmParams[paramId];
     }
 
     @Override
     public String getParamInformationString() {
-        return "g=" + this.g;
+        return "c=" + this.c;
     }
 }

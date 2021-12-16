@@ -53,9 +53,7 @@ public class TrainingClassificationResults {
                     "\n\ttraining_time = " + doTimeNs() +
                     "\n\ttraining_time(ns) = " + elapsedTimeNanoSeconds +
                     "\n\ttraining_accuracy = " + accuracy +
-                    "\n\tnb_correct = " + nbCorrect + "/" + trainSize +
-                    "\n\tdtw_count = " + dtwCount +
-                    "\n\tea_count = " + eaCount;
+                    "\n\tnb_correct = " + nbCorrect + "/" + trainSize;
 
         return "TrainingClassificationResults:" +
                 "\n\tclassifier = " + classifier +
@@ -63,8 +61,6 @@ public class TrainingClassificationResults {
                 "\n\ttraining_time = " + doTimeNs() +
                 "\n\ttraining_time(ns) = " + elapsedTimeNanoSeconds +
                 "\n\ttraining_accuracy = " + accuracy +
-                "\n\tnb_correct = " + nbCorrect + "/" + trainSize +
-                "\n\tdtw_count = " + dtwCount +
-                "\n\tea_count = " + eaCount;
+                "\n\tnb_correct = " + nbCorrect + "/" + trainSize;
     }
 }

@@ -374,7 +374,10 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
     }
 
     public double getDistance() {
-        if (status == LBStatus.Full_WDTW) {
+        if (status == LBStatus.Full_WDTW ||
+                status == LBStatus.Full_MSM ||
+                status == LBStatus.Previous_MSM
+        ) {
             return minDist;
         }
         throw new RuntimeException("Shouldn't call getDistance if not sure there is no valid already-computed Distance");
@@ -418,7 +421,11 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
         Partial_LB_KeoghQR, Full_LB_KeoghQR, Partial_LB_KeoghRQ, Full_LB_KeoghRQ,   // DTW
         Partial_LB_Enhanced, Full_LB_Enhanced,
         Previous_LB_DTW, Previous_DTW, Full_DTW, Partial_DTW,                       // DTW
+
         Partial_LB_WDTWQR, Partial_LB_WDTWRQ, Full_LB_WDTWQR, Full_LB_WDTWRQ,       // WDTW
         Previous_LB_WDTW, Previous_WDTW, Full_WDTW, Partial_WDTW,                   // WDTW
+
+        Partial_LB_MSM, Full_LB_MSM, Previous_LB_MSM, Previous_MSM, Full_MSM,       // MSM
+        Partial_MSM,                                                                // MSM
     }
 }

@@ -21,8 +21,8 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=small",
-            "-classifier=UltraFastWDTW", // see classifiers in TimeSeriesClassifier.java
+            "-problem=Beef",
+            "-classifier=FastMSM", // see classifiers in TimeSeriesClassifier.java
             "-paramId=-1",
             "-cpu=4",
             "-verbose=1",
@@ -32,7 +32,7 @@ public class TrainingTimeBenchmark {
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-//        args = testArgs;
+        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
@@ -145,6 +145,7 @@ public class TrainingTimeBenchmark {
         TrainingClassificationResults trainingResults = classifier.fit(trainData);
         trainingResults.problem = problem;
         println("[" + moduleName + "]" + trainingResults);
+        println(classifier);
 
         double totalTime = trainingResults.elapsedTimeNanoSeconds;
         if (Application.doEvaluation) {

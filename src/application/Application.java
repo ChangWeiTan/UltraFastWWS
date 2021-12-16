@@ -102,6 +102,16 @@ public class Application {
     public static TimeSeriesClassifier initTSC(final Sequences trainData) {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
+            /// MSM distance
+            case "FastMSM":
+                classifier = new FastMSM(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "MSMLOOCV":
+                classifier = new MSMLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
             /// WDTW distance
             case "UltraFastWDTW":
                 classifier = new UltraFastWDTW(paramId, trainData);
