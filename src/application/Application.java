@@ -16,7 +16,7 @@ public class Application {
     public static String datasetPath;
     public static String problem = "";
     public static String classifierName = "DTW-1NN";
-    public static int paramId = 0;
+    public static int paramId = -1;
     public static int verbose = 0;
     public static boolean znorm = true;
     public static boolean retrain = true;
