@@ -1,5 +1,6 @@
 package classifiers;
 
+import application.Application;
 import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
@@ -60,7 +61,7 @@ public class EAPFastWDTWEA extends EAPWDTW1NN {
         final ArrayList<LazyAssessNNEAPWDTW> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
-            if (current % 10 == 0){
+            if (Application.verbose > 1  && current % 10 == 0){
                 System.out.print(".");
             }
             final Sequence sCurrent = train.get(current);
@@ -157,6 +158,6 @@ public class EAPFastWDTWEA extends EAPWDTW1NN {
                 }
             }
         }
-        System.out.println("");
+        if (Application.verbose > 1) System.out.println("");
     }
 }
