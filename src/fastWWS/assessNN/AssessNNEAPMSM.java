@@ -2,7 +2,6 @@ package fastWWS.assessNN;
 
 import application.Application;
 import datasets.Sequence;
-import distances.eap.EAPDTW;
 import distances.eap.EAPMSM;
 import fastWWS.SequenceStatsCache;
 
@@ -78,9 +77,17 @@ public class AssessNNEAPMSM extends LazyAssessNN {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[msmParams.length - 1], Double.POSITIVE_INFINITY);
     }
 
+    public void getUpperBound(int paramId) {
+        upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[paramId], Double.POSITIVE_INFINITY);
+    }
+
     @Override
     public void getUpperBound(final double scoreToBeat) {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[msmParams.length - 1], scoreToBeat);
+    }
+
+    public void getUpperBound(final double scoreToBeat, int paramId) {
+        upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[paramId + 1], scoreToBeat);
     }
 
     private void setCurrentC(final double c) {
