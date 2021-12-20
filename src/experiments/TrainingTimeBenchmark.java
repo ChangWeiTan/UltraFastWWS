@@ -26,7 +26,7 @@ public class TrainingTimeBenchmark {
 //            "-classifier=EAPFastWDTW",
 //            "-classifier=EAPFastWDTWEA",
             "-paramId=-1",
-            "-cpu=1",
+            "-cpu=2",
             "-verbose=1",
             "-iter=0",
             "-retrain=false",
@@ -47,7 +47,9 @@ public class TrainingTimeBenchmark {
             case "all":
                 if (Application.numThreads == 1) {
                     StrLong[] datasetOps = TimeSeriesDatasets.allDatasetOperations;
-                    for (StrLong a : datasetOps) {
+                    Arrays.sort(datasetOps);
+                    for (int i = datasetOps.length-1; i >= 0; i--) {
+                        StrLong a = datasetOps[i];
                         singleRun(a.str);
                         Application.outputPath = null;
                     }
@@ -56,7 +58,9 @@ public class TrainingTimeBenchmark {
             case "small":
                 if (Application.numThreads == 1) {
                     StrLong[] datasetOps = TimeSeriesDatasets.smallDatasetOperations;
-                    for (StrLong a : datasetOps) {
+                    Arrays.sort(datasetOps);
+                    for (int i = datasetOps.length-1; i >= 0; i--) {
+                        StrLong a = datasetOps[i];
                         singleRun(a.str);
                         Application.outputPath = null;
                     }
