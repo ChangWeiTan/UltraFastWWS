@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cpu=7
+cpu=1
 iter=0
 
 javac -sourcepath src -cp lib/* -d bin src/experiments/TrainingTimeBenchmark.java
