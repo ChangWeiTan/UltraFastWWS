@@ -1,5 +1,6 @@
 package fastWWS.assessNN;
 
+import application.Application;
 import datasets.Sequence;
 import distances.classic.WDTW;
 import distances.eap.EAPWDTW;
@@ -100,12 +101,13 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
             case None:
             case Previous_LB_WDTW:
             case Previous_WDTW:
-                if (bestMinDist * weightVector[0] >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 indexStoppedLB = 0;
                 minDist = 0;
             case Partial_LB_WDTWQR:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWQR(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWQR;
@@ -118,6 +120,7 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
             case Partial_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWRQ(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWRQ;
@@ -127,6 +130,7 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
             case Full_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector, Double.POSITIVE_INFINITY);
+                Application.distCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:
@@ -144,12 +148,13 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
             case Previous_LB_WDTW:
             case Partial_WDTW:
             case Previous_WDTW:
-                if (bestMinDist * weightVector[0] >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 indexStoppedLB = 0;
                 minDist = 0;
             case Partial_LB_WDTWQR:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWQR(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWQR;
@@ -162,6 +167,7 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
             case Partial_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWRQ(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWRQ;
@@ -172,11 +178,13 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
+                    Application.eaCount++;
                     minDist = bestSoFar;
                     if (minDist > bestMinDist) bestMinDist = minDist;
                     status = LBStatus.Partial_WDTW;
                     return RefineReturnType.Pruned_with_Dist;
                 }
+                Application.distCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:

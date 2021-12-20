@@ -6,7 +6,8 @@ package distances;
 public class ElasticDistances {
     public enum Measures {
         DTW,
-        WDTW
+        WDTW,
+        MSM,
     }
     public final static double EPSILON = 10e-12;
 

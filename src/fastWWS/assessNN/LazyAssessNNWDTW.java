@@ -1,5 +1,6 @@
 package fastWWS.assessNN;
 
+import application.Application;
 import datasets.Sequence;
 import distances.classic.WDTW;
 import distances.eap.EAPWDTW;
@@ -106,6 +107,7 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
             case Partial_LB_WDTWQR:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWQR(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWQR;
@@ -118,6 +120,7 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
             case Partial_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWRQ(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWRQ;
@@ -127,6 +130,7 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
             case Full_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector);
+                Application.distCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:
@@ -150,6 +154,7 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
             case Partial_LB_WDTWQR:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWQR(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWQR;
@@ -162,6 +167,7 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
             case Partial_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBWDTWRQ(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWRQ;
@@ -172,11 +178,13 @@ public class LazyAssessNNWDTW extends LazyAssessNN {
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
+                    Application.eaCount++;
                     minDist = bestSoFar;
                     if (minDist > bestMinDist) bestMinDist = minDist;
                     status = LBStatus.Partial_WDTW;
                     return RefineReturnType.Pruned_with_Dist;
                 }
+                Application.distCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:

@@ -22,14 +22,14 @@ public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
             "-problem=small",
-            "-classifier=UltraFastWDTW", // see classifiers in TimeSeriesClassifier.java
-//            "-classifier=EAPFastWDTW",
-//            "-classifier=EAPFastWDTWEA",
+//            "-classifier=UltraFastMSM", // see classifiers in TimeSeriesClassifier.java
+//            "-classifier=EAPFastMSM",
+            "-classifier=EAPFastMSMEA",
             "-paramId=-1",
-            "-cpu=2",
+            "-cpu=1",
             "-verbose=1",
             "-iter=0",
-            "-retrain=false",
+            "-retrain=true",
             "-eval=false",
     };
 

@@ -22,6 +22,9 @@ public class Application {
     public static boolean retrain = true;
     public static int iteration = 0;
     public static int numThreads = 0;
+    public static int distCount = 0;
+    public static int lbCount = 0;
+    public static int eaCount = 0;
     public static double scalabilityTrainRatio = 0;
     public static double scalabilityLengthRatio = 0;
     public static boolean doEvaluation = true;
@@ -51,6 +54,9 @@ public class Application {
                         break;
                     case "-znorm":
                         znorm = Boolean.parseBoolean(options[1]);
+                        break;
+                    case "-retrain":
+                        retrain = Boolean.parseBoolean(options[1]);
                         break;
                     case "-cpu":
                         numThreads = Integer.parseInt(options[1]);
@@ -103,9 +109,25 @@ public class Application {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
             /// MSM distance
+            case "UltraFastMSM":
+                classifier = new UltraFastMSM(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastMSMEA":
+                classifier = new EAPFastMSMEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastMSM":
+                classifier = new EAPFastMSM(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "FastMSM":
                 classifier = new FastMSM(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPMSMLOOCV":
+                classifier = new EAPMSMLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
                 break;
             case "MSMLOOCV":
                 classifier = new MSMLoocv(paramId, trainData);
@@ -239,8 +261,6 @@ public class Application {
         outFile.writeLine("train_size," + trainingClassificationResults.trainSize);
         outFile.writeLine("train_time," + trainingClassificationResults.doTimeNs());
         outFile.writeLine("train_time_ns," + trainingClassificationResults.elapsedTimeNanoSeconds);
-        outFile.writeLine("train_dtw_count," + trainingClassificationResults.dtwCount);
-        outFile.writeLine("train_ea_count," + trainingClassificationResults.eaCount);
 
         outFile.writeLine("test_acc," + classificationResults.accuracy);
         outFile.writeLine("test_correct," + classificationResults.nbCorrect);
@@ -306,8 +326,6 @@ public class Application {
         outFile.writeLine("train_size," + trainingClassificationResults.trainSize);
         outFile.writeLine("train_time," + trainingClassificationResults.doTimeNs());
         outFile.writeLine("train_time_ns," + trainingClassificationResults.elapsedTimeNanoSeconds);
-        outFile.writeLine("train_dtw_count," + trainingClassificationResults.dtwCount);
-        outFile.writeLine("train_ea_count," + trainingClassificationResults.eaCount);
 
         if (trainingClassificationResults.cvParams != null) {
             StringBuilder str = new StringBuilder("[" + trainingClassificationResults.cvParams[0]);
