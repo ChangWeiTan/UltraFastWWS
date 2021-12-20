@@ -21,18 +21,21 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=Beef",
-            "-classifier=FastMSM", // see classifiers in TimeSeriesClassifier.java
+            "-problem=small",
+            "-classifier=UltraFastWDTW", // see classifiers in TimeSeriesClassifier.java
+//            "-classifier=EAPFastWDTW",
+//            "-classifier=EAPFastWDTWEA",
             "-paramId=-1",
-            "-cpu=4",
+            "-cpu=1",
             "-verbose=1",
             "-iter=0",
+            "-retrain=false",
             "-eval=false",
     };
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-        args = testArgs;
+//        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
@@ -43,14 +46,20 @@ public class TrainingTimeBenchmark {
         switch (Application.problem) {
             case "all":
                 if (Application.numThreads == 1) {
-                    for (String problem : TimeSeriesDatasets.allDatasets)
-                        singleRun(problem);
+                    StrLong[] datasetOps = TimeSeriesDatasets.allDatasetOperations;
+                    for (StrLong a : datasetOps) {
+                        singleRun(a.str);
+                        Application.outputPath = null;
+                    }
                     break;
                 }
             case "small":
                 if (Application.numThreads == 1) {
-                    for (String problem : TimeSeriesDatasets.smallDatasets)
-                        singleRun(problem);
+                    StrLong[] datasetOps = TimeSeriesDatasets.smallDatasetOperations;
+                    for (StrLong a : datasetOps) {
+                        singleRun(a.str);
+                        Application.outputPath = null;
+                    }
                     break;
                 }
                 String[] datasets;
@@ -134,6 +143,9 @@ public class TrainingTimeBenchmark {
                         Application.iteration + "/" +
                         problem + "/";
         }
+
+        if (!Application.retrain && Application.isDatasetDone(Application.outputPath))
+            return;
 
         DatasetLoader loader = new DatasetLoader();
         Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm);
