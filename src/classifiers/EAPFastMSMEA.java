@@ -78,7 +78,7 @@ public class EAPFastMSMEA extends EAPMSM1NN {
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- Try to beat the previous best NN
-                        final double toBeat = prevNN.distance;
+                        double toBeat = prevNN.distance;
                         final LazyAssessNNEAPMSM challenger = lazyAssessNNS[previous];
                         final LazyAssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, this.c, toBeat);
 

@@ -109,6 +109,10 @@ public class Application {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
             /// MSM distance
+            case "UltraFastMSM2":
+                classifier = new UltraFastMSM2(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastMSM":
                 classifier = new UltraFastMSM(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;

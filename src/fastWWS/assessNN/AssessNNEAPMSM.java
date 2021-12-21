@@ -107,15 +107,18 @@ public class AssessNNEAPMSM extends LazyAssessNN {
         switch (status) {
             case None:
             case Previous_MSM:
-            case Partial_MSM:
+//            case Partial_MSM:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], currentC, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
                     minDist = bestSoFar;
-                    if (minDist > bestMinDist) bestMinDist = minDist;
-                    status = LBStatus.Partial_MSM;
+//                    if (minDist > bestMinDist) bestMinDist = minDist;
+                    bestMinDist = minDist;
+                    status = LBStatus.Full_MSM;
                     Application.eaCount++;
-                    return RefineReturnType.Pruned_with_Dist;
+//                    return RefineReturnType.Pruned_with_Dist;
+                    if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                    else return RefineReturnType.New_best;
                 }
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_MSM;

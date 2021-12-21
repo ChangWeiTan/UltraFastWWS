@@ -93,12 +93,13 @@ public class UltraFastMSM extends EAPMSM1NN {
                 // --- First we want to beat the current best candidate:
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
-                    challenger.getUpperBound(paramId + 1);
+                    challenger.getUpperBound();
                     bestSoFar = challenger.upperBoundDistance;
-                    candidateNNS[paramId + 1][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                    candidateNNS[nParams - 1][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                 } else {
-                    bestSoFar = Math.max(toBeat, prevNN.distance) * 2;
+                    bestSoFar = Math.max(toBeat, prevNN.distance);
                 }
+//                bestSoFar *= cutoffMultiplier;
 //                bestSoFar = Math.max(toBeat, prevNN.distance);
 //                bestSoFar = Double.POSITIVE_INFINITY;
                 AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
@@ -168,13 +169,11 @@ public class UltraFastMSM extends EAPMSM1NN {
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nParams - 1][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                             } else {
-                                bestSoFar = candidateNNS[nParams - 1][current].distance * 2;
+                                bestSoFar = candidateNNS[nParams - 1][current].distance;
                             }
                         } else {
-                            bestSoFar = toBeat * 2;
+                            bestSoFar = toBeat;
                         }
-//                        bestSoFar = toBeat;
-//                        bestSoFar = Double.POSITIVE_INFINITY;
                         final AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
                         // --- Check the result
@@ -204,13 +203,11 @@ public class UltraFastMSM extends EAPMSM1NN {
                             bestSoFar = challenger.upperBoundDistance;
                             candidateNNS[nParams - 1][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                         } else {
-                            bestSoFar = candidateNNS[nParams - 1][current].distance * 2;
+                            bestSoFar = candidateNNS[nParams - 1][current].distance;
                         }
                     } else {
-                        bestSoFar = Math.max(toBeat, prevNN.distance) * 2;
+                        bestSoFar = Math.max(toBeat, prevNN.distance);
                     }
-//                    bestSoFar = Math.max(toBeat, prevNN.distance);
-//                    bestSoFar = Double.POSITIVE_INFINITY;
                     AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
                     // --- Check the result
@@ -260,13 +257,13 @@ public class UltraFastMSM extends EAPMSM1NN {
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nParams - 1][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                             } else {
-                                bestSoFar = candidateNNS[nParams - 1][current].distance * 2;
+                                bestSoFar = candidateNNS[nParams - 1][current].distance;
                             }
-                        } else {
-                            bestSoFar = Math.max(toBeat, prevNN.distance) * 2;
                         }
-//                        bestSoFar = Double.POSITIVE_INFINITY;
-//                        bestSoFar = Math.max(toBeat, prevNN.distance) * 2;
+                        else {
+                            bestSoFar = Math.max(toBeat, prevNN.distance);
+//                            bestSoFar *= 2;
+                        }
                         rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
                         // --- Check the result
