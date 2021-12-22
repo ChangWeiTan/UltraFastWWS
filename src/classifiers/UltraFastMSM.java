@@ -99,9 +99,6 @@ public class UltraFastMSM extends EAPMSM1NN {
                 } else {
                     bestSoFar = Math.max(toBeat, prevNN.distance);
                 }
-//                bestSoFar *= cutoffMultiplier;
-//                bestSoFar = Math.max(toBeat, prevNN.distance);
-//                bestSoFar = Double.POSITIVE_INFINITY;
                 AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
                 // --- Check the result
@@ -259,10 +256,9 @@ public class UltraFastMSM extends EAPMSM1NN {
                             } else {
                                 bestSoFar = candidateNNS[nParams - 1][current].distance;
                             }
-                        }
-                        else {
+                        } else {
                             bestSoFar = Math.max(toBeat, prevNN.distance);
-//                            bestSoFar *= 2;
+                            // bestSoFar *= 2;
                         }
                         rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
@@ -302,9 +298,9 @@ public class UltraFastMSM extends EAPMSM1NN {
                     // the current best candidate is really the best one, so the NN.
                     // So assign the current NN to all the windows that are valid
                     d = currPNN.distance;
-                    double prevD = candidateNNS[paramId - 1][current].distance;
+                    double lastD = candidateNNS[nParams - 1][current].distance;
                     index = currPNN.nnIndex;
-                    if (d == prevD) {
+                    if (d == lastD) {
                         for (int tmp = paramId; tmp < nParams; ++tmp) {
                             candidateNNS[tmp][current].set(index, d, CandidateNN.Status.NN);
                             classCounts[tmp][current] = classCounts[paramId][current].clone();
