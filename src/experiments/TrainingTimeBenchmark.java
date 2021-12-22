@@ -21,10 +21,11 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=small",
-//            "-classifier=UltraFastMSM", // see classifiers in TimeSeriesClassifier.java
+            "-problem=ECG200",
+            "-classifier=UltraFastWDTW2", // see classifiers in TimeSeriesClassifier.java
+//            "-classifier=UltraFastMSM2",
 //            "-classifier=EAPFastMSM",
-            "-classifier=EAPFastMSMEA",
+//            "-classifier=EAPFastMSMEA",
             "-paramId=-1",
             "-cpu=1",
             "-verbose=1",
