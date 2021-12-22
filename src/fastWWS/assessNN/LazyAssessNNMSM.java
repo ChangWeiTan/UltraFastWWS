@@ -102,7 +102,7 @@ public class LazyAssessNNMSM extends LazyAssessNN {
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_MSM;
             case Full_MSM:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");
@@ -139,7 +139,7 @@ public class LazyAssessNNMSM extends LazyAssessNN {
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_MSM;
             case Full_MSM:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");

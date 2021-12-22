@@ -164,7 +164,7 @@ public class LazyAssessNNUCRSuite extends LazyAssessNN {
         minDist = dtwComputer.distance(query.data[0], reference.data[0], currentW, scoreToBeat);
         if (minDist > bestMinDist) bestMinDist = minDist;
 
-        if (bestMinDist >= scoreToBeat)
+        if (bestMinDist > scoreToBeat)
             return Double.POSITIVE_INFINITY;
         else
             return bestMinDist;

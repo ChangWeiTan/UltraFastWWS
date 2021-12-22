@@ -134,7 +134,7 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");
@@ -188,7 +188,7 @@ public class LazyAssessNNEAPWDTW extends LazyAssessNN {
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");

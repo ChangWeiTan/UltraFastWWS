@@ -1,5 +1,6 @@
 package fastWWS.assessNN;
 
+import application.Application;
 import datasets.Sequence;
 import distances.eap.EAPDTW;
 import distances.eap.EAPWDTW;
@@ -72,6 +73,18 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
         getUpperBound(bsf);
     }
 
+    @Override
+    public void getUpperBound() {
+        tryEuclidean();
+        upperBoundDistance = euclideanDistance / 2;
+    }
+
+    @Override
+    public void getUpperBound(final double scoreToBeat) {
+        tryEuclidean(scoreToBeat);
+        upperBoundDistance = euclideanDistance / 2;
+    }
+
     private void setCurrentWeightVector(final double[] weightVector) {
         this.currentWeightVector = weightVector;
         if (status == LBStatus.Full_WDTW) {
@@ -80,20 +93,6 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
             this.status = LBStatus.None;
             this.oldIndexStoppedLB = indexStoppedLB;
         }
-    }
-
-    @Override
-    public void getUpperBound() {
-        // todo maybe we can use Euclidean instead of WDTW(g=0)
-        // WDTW(q,c) @ g=0 = DTW(q,c)/2
-        EAPDTW dtwComputer = new EAPDTW();
-        upperBoundDistance = dtwComputer.distance(query.data[0], reference.data[0], query.length(), Double.POSITIVE_INFINITY) / 2;
-    }
-
-    @Override
-    public void getUpperBound(final double scoreToBeat) {
-        EAPDTW dtwComputer = new EAPDTW();
-        upperBoundDistance = dtwComputer.distance(query.data[0], reference.data[0], query.length(), scoreToBeat) / 2;
     }
 
     public RefineReturnType tryToBeat(final double scoreToBeat, final double[] weightVector, final double bestSoFar) {
@@ -105,16 +104,18 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
+                    Application.eaCount++;
                     minDist = bestSoFar;
                     minWindowValidity = 0;
                     if (minDist > bestMinDist) bestMinDist = minDist;
                     status = LBStatus.Partial_WDTW;
                     return RefineReturnType.Pruned_with_Dist;
                 }
+                Application.distCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_WDTW;
             case Full_WDTW:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");

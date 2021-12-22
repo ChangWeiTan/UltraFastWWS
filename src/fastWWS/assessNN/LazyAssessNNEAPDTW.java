@@ -74,7 +74,7 @@ public class LazyAssessNNEAPDTW extends LazyAssessNN {
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_DTW;
             case Full_DTW:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");
