@@ -4,7 +4,6 @@ import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.UpperBounds;
 import fastWWS.assessNN.AssessNNEAPMSM;
 import results.TrainingClassificationResults;
 
