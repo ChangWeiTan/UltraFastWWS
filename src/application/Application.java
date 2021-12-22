@@ -139,6 +139,10 @@ public class Application {
                 break;
 
             /// WDTW distance
+            case "UltraFastWDTW2":
+                classifier = new UltraFastWDTW2(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastWDTW":
                 classifier = new UltraFastWDTW(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
@@ -165,6 +169,11 @@ public class Application {
                 break;
 
             /// DTW distance
+            case "UltraFastWWSearch2":
+                // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
+                classifier = new UltraFastWWSearch2(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastWWSearchFull":
                 // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
                 classifier = new UltraFastWWSearchFULL(paramId, trainData);
