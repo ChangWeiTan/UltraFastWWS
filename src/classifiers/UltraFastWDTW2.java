@@ -121,7 +121,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                     }
                 } else {
                     if (upperBounds[current][currPNN.nnIndex] == 0) {
-                        upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                        upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                         upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                         // update NNS
                         if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -134,7 +134,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                     }
                     if (prevNN.nnIndex >= 0) {
                         if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                            upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                            upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                             upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                             // update NNS
                             if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -232,7 +232,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                             }
                         } else {
                             if (upperBounds[current][currPNN.nnIndex] == 0) {
-                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                                 upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                                 // update NNS
                                 if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -245,7 +245,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                             }
                             if (prevNN.nnIndex >= 0) {
                                 if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                                     upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                                     // update NNS
                                     if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -300,7 +300,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                         }
                     } else {
                         if (upperBounds[current][currPNN.nnIndex] == 0) {
-                            upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                            upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                             upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                             // update NNS
                             if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -313,7 +313,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                         }
                         if (prevNN.nnIndex >= 0) {
                             if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                                upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                                 upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                                 // update NNS
                                 if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -388,7 +388,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                             }
                         } else {
                             if (upperBounds[current][currPNN.nnIndex] == 0) {
-                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                                 upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                                 // update NNS
                                 if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -401,7 +401,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                             }
                             if (prevNN.nnIndex >= 0) {
                                 if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                                     upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                                     // update NNS
                                     if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -463,11 +463,14 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
         }
     }
 
-    private double getUB(double[] query, double[] reference) {
+    private double getUB(double[] query, double[] reference, double cutoff) {
+        double c = cutoff * 2;
         double d = 0;
         for (int i = 0; i < query.length; i++) {
             double diff = query[i] - reference[i];
             d += diff * diff;
+            if (d >= c) return c;
+
         }
         return d / 2;
     }

@@ -109,7 +109,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                     }
                 } else {
                     if (upperBounds[current][currPNN.nnIndex] == 0) {
-                        upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                        upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                         upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                         // update NNS
                         if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -122,7 +122,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                     }
                     if (prevNN.nnIndex >= 0) {
                         if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                            upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                            upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                             upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                             // update NNS
                             if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -211,7 +211,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                             }
                         } else {
                             if (upperBounds[current][currPNN.nnIndex] == 0) {
-                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                                 upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                                 // update NNS
                                 if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -224,7 +224,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                             }
                             if (prevNN.nnIndex >= 0) {
                                 if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                                     upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                                     // update NNS
                                     if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -275,7 +275,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                         }
                     } else {
                         if (upperBounds[current][currPNN.nnIndex] == 0) {
-                            upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                            upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                             upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                             // update NNS
                             if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -288,7 +288,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                         }
                         if (prevNN.nnIndex >= 0) {
                             if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                                upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                                 upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                                 // update NNS
                                 if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -359,7 +359,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                             }
                         } else {
                             if (upperBounds[current][currPNN.nnIndex] == 0) {
-                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0]);
+                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
                                 upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
                                 // update NNS
                                 if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
@@ -372,7 +372,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
                             }
                             if (prevNN.nnIndex >= 0) {
                                 if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0]);
+                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
                                     upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
                                     // update NNS
                                     if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
@@ -440,7 +440,7 @@ public class UltraFastMSM2 extends EAPMSM1NN {
         }
     }
 
-    private double getUB(double[] query, double[] reference) {
-        return distComputer.distance(query, reference, msmParams[ubParam], Double.POSITIVE_INFINITY);
+    private double getUB(double[] query, double[] reference, double cutoff) {
+        return distComputer.distance(query, reference, msmParams[ubParam], cutoff);
     }
 }
