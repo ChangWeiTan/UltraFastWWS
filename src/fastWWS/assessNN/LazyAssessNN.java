@@ -96,7 +96,7 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
     }
 
     public void tryEuclidean(final double scoreToBeat) {
-        while (indexStoppedED < query.length() && minDist <= scoreToBeat) {
+        while (indexStoppedED < query.length() && euclideanDistance <= scoreToBeat) {
             final double diff = query.value(indexStoppedED) - reference.value(indexStoppedED);
             euclideanDistance += diff * diff;
             nOperationsED++;
@@ -106,10 +106,12 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
 
     public void getUpperBound() {
         tryEuclidean();
+        this.upperBoundDistance = euclideanDistance;
     }
 
     public void getUpperBound(final double scoreToBeat) {
         tryEuclidean(scoreToBeat);
+        this.upperBoundDistance = euclideanDistance;
     }
 
 
@@ -384,14 +386,16 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
     }
 
     public double getDistance(final int window) {
-        if ((status == LBStatus.Full_DTW) && minWindowValidity <= window) {
+        if ((status == LBStatus.Full_DTW ||
+                status == LBStatus.Full_ERP) &&
+                minWindowValidity <= window) {
             return minDist;
         }
         throw new RuntimeException("Shouldn't call getDistance if not sure there is no valid already-computed Distance");
     }
 
     public int getMinWindowValidityForFullDistance() {
-        if (status == LBStatus.Full_DTW) {
+        if (status == LBStatus.Full_DTW || status == LBStatus.Full_ERP) {
             return minWindowValidity;
         }
         throw new RuntimeException("Shouldn't call getDistance if not sure there is no valid already-computed Distance");
@@ -427,5 +431,9 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
 
         Partial_LB_MSM, Full_LB_MSM, Previous_LB_MSM, Previous_MSM, Full_MSM,       // MSM
         Partial_MSM,                                                                // MSM
+
+        Partial_LB_ERPQR, Partial_LB_ERPRQ, Full_LB_ERPQR, Full_LB_ERPRQ,           // ERP
+        Previous_G_LB_ERP, Previous_Band_LB_ERP, Previous_Band_ERP, Full_ERP,       // ERP
+        Partial_ERP,                                                                // ERP
     }
 }

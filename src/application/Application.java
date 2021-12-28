@@ -1,7 +1,15 @@
 package application;
 
 import classifiers.*;
-import classifiers.FastWWSearch;
+import classifiers.eapNN.EAPERPLoocv;
+import classifiers.eapNN.EAPLoocv;
+import classifiers.eapNN.EAPMSMLoocv;
+import classifiers.eapNN.EAPWDTWLoocv;
+import classifiers.classicNN.ERPLoocv;
+import classifiers.fastNN.FastWWSearch;
+import classifiers.classicNN.*;
+import classifiers.fastNN.*;
+import classifiers.ultraFastNN.*;
 import datasets.Sequences;
 import fileIO.OutFile;
 import results.ClassificationResults;
@@ -108,6 +116,36 @@ public class Application {
     public static TimeSeriesClassifier initTSC(final Sequences trainData) {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
+            /// ERP distance
+            case "UltraFastERP2":
+                classifier = new UltraFastERP2(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastERP":
+                classifier = new UltraFastERP(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastERPEA":
+                classifier = new EAPFastERPEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastERP":
+                classifier = new EAPFastERP(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastERP":
+                classifier = new FastERP(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPERPLOOCV":
+                classifier = new EAPERPLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "ERPLOOCV":
+                classifier = new ERPLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
             /// MSM distance
             case "UltraFastMSM2":
                 classifier = new UltraFastMSM2(paramId, trainData);

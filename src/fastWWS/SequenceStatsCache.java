@@ -2,6 +2,7 @@ package fastWWS;
 
 
 import datasets.Sequences;
+import distances.lowerBounds.LbErp;
 import distances.lowerBounds.LbKeogh;
 import utils.IndexedDouble;
 
@@ -17,11 +18,13 @@ public class SequenceStatsCache {
     protected int[] indexMaxs, indexMins;
     protected boolean[] isMinFirst, isMinLast, isMaxFirst, isMaxLast;
     protected double[] lastWindowComputed;
+    protected double[] lastERPWindowComputed;
     protected int currentWindow;
     protected Sequences train;
     protected IndexedDouble[][] indicesSortedByAbsoluteValue;
     protected double[][] lbDistances;
     protected LbKeogh lbKeoghComputer = new LbKeogh();
+    protected LbErp lbErpComputer = new LbErp();
 
 
     public SequenceStatsCache(final Sequences train, final int startingWindow) {
@@ -32,6 +35,8 @@ public class SequenceStatsCache {
         this.currentWindow = startingWindow;
 
         this.lastWindowComputed = new double[nSequences];
+        this.lastERPWindowComputed = new double[nSequences];
+
         Arrays.fill(this.lastWindowComputed, -1);
 
         this.LEs = new ArrayList<>(nSequences);
@@ -101,6 +106,29 @@ public class SequenceStatsCache {
     public void computeLEandUE(final int i, final int r) {
         lbKeoghComputer.fillUL(train.get(i).data[0], r, UEs.get(i), LEs.get(i));
         this.lastWindowComputed[i] = r;
+    }
+
+    public double[] getLE(final int i, final double g, final double bandSize) {
+        if (lastERPWindowComputed[i] != bandSize) {
+            LEs.set(i, new double[train.get(i).length()]);
+            UEs.set(i, new double[train.get(i).length()]);
+            computeLEandUE(i, g, bandSize);
+        }
+        return LEs.get(i);
+    }
+
+    public double[] getUE(final int i, final double g, final double bandSize) {
+        if (lastERPWindowComputed[i] != bandSize) {
+            LEs.set(i, new double[train.get(i).length()]);
+            UEs.set(i, new double[train.get(i).length()]);
+            computeLEandUE(i, g, bandSize);
+        }
+        return UEs.get(i);
+    }
+
+    public void computeLEandUE(final int i, final double g, final double bandSize) {
+        lbErpComputer.fillUL(train.get(i).data[0], g, bandSize, UEs.get(i), LEs.get(i));
+        this.lastERPWindowComputed[i] = bandSize;
     }
 
     public boolean isMinFirst(int i) {

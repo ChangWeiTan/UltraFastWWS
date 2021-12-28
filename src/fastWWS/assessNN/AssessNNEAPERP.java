@@ -2,23 +2,28 @@ package fastWWS.assessNN;
 
 import application.Application;
 import datasets.Sequence;
+import distances.eap.EAPERP;
 import distances.eap.EAPMSM;
 import fastWWS.SequenceStatsCache;
+import results.WarpingPathResults;
 
 import static classifiers.classicNN.MSM1NN.msmParams;
+import static distances.classic.ERP.getWindowSize;
 
 /**
  * LazyAssessNN with MSM
  */
-public class AssessNNEAPMSM extends LazyAssessNN {
-    private final EAPMSM distComputer = new EAPMSM();
-    private double currentC;
+public class AssessNNEAPERP extends LazyAssessNN {
+    private final EAPERP distComputer = new EAPERP();
+    private double currentG;
+    private double currentBandSize;
+    private int currentWindowSize;
 
-    public AssessNNEAPMSM(final SequenceStatsCache cache) {
+    public AssessNNEAPERP(final SequenceStatsCache cache) {
         super(cache);
     }
 
-    public AssessNNEAPMSM(final Sequence query, final int index,
+    public AssessNNEAPERP(final Sequence query, final int index,
                           final Sequence reference, final int indexReference,
                           final SequenceStatsCache cache) {
         super(query, index, reference, indexReference, cache);
@@ -30,7 +35,9 @@ public class AssessNNEAPMSM extends LazyAssessNN {
     public void set(final Sequence query, final int index, final Sequence reference, final int indexReference) {
         // --- OTHER RESET
         indexStoppedLB = oldIndexStoppedLB = 0;
-        currentC = 0;
+        currentG = 0;
+        currentBandSize = 0;
+        currentWindowSize = 0;
         // --- From constructor
         if (index < indexReference) {
             this.query = query;
@@ -52,7 +59,9 @@ public class AssessNNEAPMSM extends LazyAssessNN {
                     final double bsf) {
         // --- OTHER RESET
         indexStoppedLB = oldIndexStoppedLB = 0;
-        currentC = 0;
+        currentG = 0;
+        currentBandSize = 0;
+        currentWindowSize = 0;
         // --- From constructor
         if (index < indexReference) {
             this.query = query;
@@ -71,30 +80,22 @@ public class AssessNNEAPMSM extends LazyAssessNN {
         getUpperBound(bsf);
     }
 
-
-    @Override
-    public void getUpperBound() {
-        upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[msmParams.length - 1], Double.POSITIVE_INFINITY);
-    }
-
-    public void getUpperBound(int paramId) {
-        upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[paramId], Double.POSITIVE_INFINITY);
-    }
-
-    @Override
-    public void getUpperBound(final double scoreToBeat) {
-        upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[msmParams.length - 1], scoreToBeat);
-    }
-
-    public void getUpperBound(final double scoreToBeat, int paramId) {
-        upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[paramId + 1], scoreToBeat);
-    }
-
-    private void setCurrentC(final double c) {
-        if (this.currentC != c) {
-            this.currentC = c;
-            if (status == LBStatus.Full_MSM) {
-                this.status = LBStatus.Previous_MSM;
+    private void setCurrentGandBandSize(final double g, final double bandSize) {
+        if (this.currentG != g) {
+            this.currentWindowSize = getWindowSize(query.length(), bandSize);
+            this.currentBandSize = bandSize;
+            this.currentG = g;
+            this.minDist = 0.0;
+            this.bestMinDist = minDist;
+            indexStoppedLB = oldIndexStoppedLB = 0;
+            this.status = LBStatus.None;
+        } else if (this.currentBandSize != bandSize) {
+            this.currentWindowSize = getWindowSize(query.length(), bandSize);
+            this.currentBandSize = bandSize;
+            if (status == LBStatus.Full_ERP) {
+                if (this.currentBandSize < minWindowValidity) {
+                    this.status = LBStatus.Previous_Band_ERP;
+                }
             } else {
                 this.status = LBStatus.None;
                 this.oldIndexStoppedLB = indexStoppedLB;
@@ -102,25 +103,28 @@ public class AssessNNEAPMSM extends LazyAssessNN {
         }
     }
 
-    public RefineReturnType tryToBeat(final double scoreToBeat, final double c, final double bestSoFar) {
-        setCurrentC(c);
+    public RefineReturnType tryToBeat(final double scoreToBeat, final double g, final double bandSize, final double bestSoFar) {
+        setCurrentGandBandSize(g, bandSize);
         switch (status) {
             case None:
-            case Previous_MSM:
-            case Partial_MSM:
+            case Previous_Band_ERP:
+            case Partial_ERP:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-                minDist = distComputer.distance(query.data[0], reference.data[0], currentC, bestSoFar);
-                if (minDist >= Double.MAX_VALUE) {
-                    minDist = bestSoFar;
-                    if (minDist > bestMinDist) bestMinDist = minDist;
-                    status = LBStatus.Partial_MSM;
+                final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentG, currentWindowSize, bestSoFar);
+                if (res.earlyAbandon) {
                     Application.eaCount++;
+                    minDist = bestSoFar;
+                    minWindowValidity = 0;
+                    if (minDist > bestMinDist) bestMinDist = minDist;
+                    status = LBStatus.Partial_ERP;
                     return RefineReturnType.Pruned_with_Dist;
                 }
+                minDist = res.distance;
+                minWindowValidity = res.distanceFromDiagonal;
                 if (minDist > bestMinDist) bestMinDist = minDist;
-                status = LBStatus.Full_MSM;
+                status = LBStatus.Full_ERP;
                 Application.distCount++;
-            case Full_MSM:
+            case Full_ERP:
                 if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
@@ -132,13 +136,16 @@ public class AssessNNEAPMSM extends LazyAssessNN {
     public double getDoubleValueForRanking() {
         double thisD = this.bestMinDist;
 
+        // ERP
         switch (status) {
-            // MSM
-            case Full_MSM:
-            case Partial_MSM:
-                return thisD / query.length();
-            case Previous_MSM:
-                return 0.8 * thisD / query.length();
+            case Full_ERP:
+            case Partial_ERP:
+                return thisD / (query.length());
+            case Previous_Band_ERP:
+                return 0.8 * thisD / (query.length());
+            case Previous_G_LB_ERP:
+            case Previous_Band_LB_ERP:
+                return thisD / oldIndexStoppedLB;
             case None:
                 return Double.POSITIVE_INFINITY;
             default:

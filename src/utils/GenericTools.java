@@ -1,5 +1,7 @@
 package utils;
 
+import datasets.Sequences;
+
 import java.util.*;
 
 public class GenericTools {
@@ -90,4 +92,46 @@ public class GenericTools {
         System.out.println(str);
     }
 
+    public static double stdv_p(Sequences input) {
+        double sumx = 0;
+        double sumx2 = 0;
+        double[] ins2array;
+        for (int i = 0; i < input.size(); i++) {
+            ins2array = input.get(i).data[0];
+            for (int j = 0; j < ins2array.length; j++) {//-1 to avoid classVal
+                sumx += ins2array[j];
+                sumx2 += ins2array[j] * ins2array[j];
+            }
+        }
+        int n = input.size() * (input.length());
+        double mean = sumx / n;
+        return Math.sqrt(sumx2 / (n) - mean * mean);
+    }
+
+    public static int[] getInclusive10(final int min, final int max) {
+        int[] output = new int[10];
+
+        double diff = 1.0 * (max - min) / 9;
+        double[] doubleOut = new double[10];
+        doubleOut[0] = min;
+        output[0] = min;
+        for (int i = 1; i < 9; i++) {
+            doubleOut[i] = doubleOut[i - 1] + diff;
+            output[i] = (int) Math.round(doubleOut[i]);
+        }
+        output[9] = max; // to make sure max isn't omitted due to double imprecision
+        return output;
+    }
+
+    public static double[] getInclusive10(final double min, final double max) {
+        double[] output = new double[10];
+        double diff = 1.0 * (max - min) / 9;
+        output[0] = min;
+        for (int i = 1; i < 9; i++) {
+            output[i] = output[i - 1] + diff;
+        }
+        output[9] = max;
+
+        return output;
+    }
 }
