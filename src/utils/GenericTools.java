@@ -80,8 +80,13 @@ public class GenericTools {
         return normalizedValues;
     }
 
+    public static int max3(int a, int b, int c) {
+        return Integer.max(a, Integer.max(b, c));
+    }
+
     public static double min3(final double a, final double b, final double c) {
-        return (a <= b) ? (Math.min(a, c)) : Math.min(b, c);
+//        return (a <= b) ? (Math.min(a, c)) : Math.min(b, c);
+        return Double.min(a, Double.min(b, c));
     }
 
     public static int argMin3(final double a, final double b, final double c) {

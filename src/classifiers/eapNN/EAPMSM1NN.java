@@ -1,26 +1,21 @@
 package classifiers.eapNN;
 
-import classifiers.classicNN.OneNearestNeighbour;
+import classifiers.classicNN.MSM1NN;
 import datasets.Sequence;
 import datasets.Sequences;
 import distances.eap.EAPMSM;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNEAPMSM;
-import results.TrainingClassificationResults;
+import fastWWS.lazyAssessNNEAP.LazyAssessNNEAPMSM;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
-import static classifiers.classicNN.MSM1NN.msmParams;
 
 /**
  * Super class for MSM-1NN
  * MSM-1NN with no lower bounds
  */
-public class EAPMSM1NN extends OneNearestNeighbour {
-    // parameters
-    protected double c = 0;                               // c value
+public class EAPMSM1NN extends MSM1NN {
     protected EAPMSM distComputer = new EAPMSM();
 
     public EAPMSM1NN() {
@@ -42,18 +37,6 @@ public class EAPMSM1NN extends OneNearestNeighbour {
         this.trainingOptions = TrainOpts.LOOCV0;
     }
 
-    public void summary() {
-        System.out.println(toString());
-    }
-
-    @Override
-    public String toString() {
-        return "[CLASSIFIER SUMMARY] Classifier: " + this.classifierIdentifier +
-                "\n[CLASSIFIER SUMMARY] training_opts: " + trainingOptions +
-                "\n[CLASSIFIER SUMMARY] c: " + c +
-                "\n[CLASSIFIER SUMMARY] best_param: " + bestParamId;
-    }
-
     @Override
     public double distance(final Sequence first, final Sequence second) {
         return distComputer.distance(first.data[0], second.data[0], this.c, Double.POSITIVE_INFINITY);
@@ -62,12 +45,6 @@ public class EAPMSM1NN extends OneNearestNeighbour {
     @Override
     public double distance(final Sequence first, final Sequence second, final double cutOffValue) {
         return distComputer.distance(first.data[0], second.data[0], this.c, cutOffValue);
-    }
-
-    @Override
-    public TrainingClassificationResults fit(final Sequences trainData) throws Exception {
-        this.setTrainingData(trainData);
-        return loocv0(this.trainData);
     }
 
     /**
@@ -193,26 +170,5 @@ public class EAPMSM1NN extends OneNearestNeighbour {
                 }
             }
         }
-    }
-
-    @Override
-    public void setTrainingData(final Sequences trainData) {
-        this.trainData = trainData;
-        this.trainCache = new SequenceStatsCache(trainData, trainData.get(0).length());
-    }
-
-    @Override
-    public void setParamsFromParamId(final int paramId) {
-        if (paramId < 0) return;
-
-        if (paramId < 100 && this.classifierIdentifier.contains("R1")) {
-            this.classifierIdentifier = this.classifierIdentifier.replace("R1", "Rn");
-        }
-        this.c = msmParams[paramId];
-    }
-
-    @Override
-    public String getParamInformationString() {
-        return "c=" + this.c;
     }
 }

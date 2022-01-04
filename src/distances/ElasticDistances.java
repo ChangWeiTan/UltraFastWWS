@@ -8,6 +8,8 @@ public class ElasticDistances {
         DTW,
         WDTW,
         MSM,
+        ERP,
+        TWE
     }
     public final static double EPSILON = 10e-12;
 

@@ -5,7 +5,7 @@ import datasets.Sequences;
 import distances.classic.MSM;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNMSM;
+import fastWWS.lazyAssessNN.LazyAssessNNMSM;
 import results.TrainingClassificationResults;
 
 import java.util.ArrayList;
@@ -120,7 +120,7 @@ public class MSM1NN extends OneNearestNeighbour {
             96.4,
             100// </editor-fold>
     };  // MSM pre-defined c values
-    private double c = 0;                               // c value
+    protected double c = 0;                               // c value
     protected MSM distComputer = new MSM();
 
     public MSM1NN() {

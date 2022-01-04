@@ -1,13 +1,12 @@
 package classifiers.eapNN;
 
-import classifiers.classicNN.OneNearestNeighbour;
+import classifiers.classicNN.DTW1NN;
 import datasets.Sequence;
 import datasets.Sequences;
 import distances.eap.EAPDTW;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNEAPDTW;
-import results.TrainingClassificationResults;
+import fastWWS.lazyAssessNNEAP.LazyAssessNNEAPDTW;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,9 +15,7 @@ import java.util.Collections;
  * Super class for EAPDTW-1NN
  * EAPDTW-1NN with no lower bounds
  */
-public class EAPDTW1NN extends OneNearestNeighbour {
-    protected double r;
-    protected int window;
+public class EAPDTW1NN extends DTW1NN {
     protected EAPDTW distComputer = new EAPDTW();
 
     public EAPDTW1NN() {
@@ -44,19 +41,6 @@ public class EAPDTW1NN extends OneNearestNeighbour {
         this.trainingOptions = TrainOpts.LOOCV0;
     }
 
-    public void summary() {
-        System.out.println(toString());
-    }
-
-    @Override
-    public String toString() {
-        return "[CLASSIFIER SUMMARY] Classifier: " + this.classifierIdentifier +
-                "\n[CLASSIFIER SUMMARY] training_opts: " + trainingOptions +
-                "\n[CLASSIFIER SUMMARY] r: " + r +
-                "\n[CLASSIFIER SUMMARY] window: " + window +
-                "\n[CLASSIFIER SUMMARY] best_param: " + bestParamId;
-    }
-
     @Override
     public double distance(final Sequence first, final Sequence second) {
         if (r < 1) {
@@ -73,12 +57,6 @@ public class EAPDTW1NN extends OneNearestNeighbour {
             return distComputer.distance(first.data[0], second.data[0], window, cutOffValue);
         }
         return distComputer.distance(first.data[0], second.data[0], cutOffValue);
-    }
-
-    @Override
-    public TrainingClassificationResults fit(final Sequences trainData) throws Exception {
-        this.setTrainingData(trainData);
-        return loocv0(this.trainData);
     }
 
     /**
@@ -208,33 +186,5 @@ public class EAPDTW1NN extends OneNearestNeighbour {
                 }
             }
         }
-    }
-
-    @Override
-    public void setTrainingData(final Sequences trainData) {
-        this.trainData = trainData;
-        this.trainCache = new SequenceStatsCache(trainData, trainData.get(0).length());
-        this.window = distComputer.getWindowSize(this.trainData.get(0).length(), this.r);
-    }
-
-    @Override
-    public void setParamsFromParamId(final int paramId) {
-        if (paramId < 0) return;
-
-        if (paramId < 100 && this.classifierIdentifier.contains("R1")) {
-            this.classifierIdentifier = this.classifierIdentifier.replace("R1", "Rn");
-        }
-        r = 1.0 * paramId / 100;
-        window = distComputer.getWindowSize(trainData.get(0).length(), r);
-    }
-
-    @Override
-    public String getParamInformationString() {
-        return "r=" + this.r;
-    }
-
-    protected int getParamIdFromWindow(final int w, final int n) {
-        double r = 1.0 * w / n;
-        return (int) Math.ceil(r * 100);
     }
 }

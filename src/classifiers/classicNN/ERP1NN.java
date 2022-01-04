@@ -5,7 +5,7 @@ import datasets.Sequences;
 import distances.classic.ERP;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNERP;
+import fastWWS.lazyAssessNN.LazyAssessNNERP;
 import results.TrainingClassificationResults;
 import utils.GenericTools;
 
@@ -18,12 +18,13 @@ import java.util.Collections;
  */
 public class ERP1NN extends OneNearestNeighbour {
     // parameters
-    private double g;                               // g value
-    private double bandSize;                        // band size in terms of percentage of sequence's length
+    protected double g;                               // g value
+    protected double bandSize;                        // band size in terms of percentage of sequence's length
+    protected int window;
 
-    private double[] gValues;                       // set of g values
-    private double[] bandSizes;                     // set of band sizes
-    private boolean gAndWindowsRefreshed = false;   // indicator if we refresh the params
+    protected double[] gValues;                       // set of g values
+    protected double[] bandSizes;                     // set of band sizes
+    protected boolean gAndWindowsRefreshed = false;   // indicator if we refresh the params
 
     protected ERP distComputer = new ERP();
 
@@ -127,7 +128,7 @@ public class ERP1NN extends OneNearestNeighbour {
                         // --- Check the result
                         if (rrt == LazyAssessNNERP.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
-                            final double d = challenger.getDistance(band);
+                            final double d = challenger.getDistance(r);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
@@ -154,7 +155,7 @@ public class ERP1NN extends OneNearestNeighbour {
                         // --- Check the result
                         if (rrt == LazyAssessNNERP.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
-                            final double d = challenger.getDistance(band);
+                            final double d = challenger.getDistance(r);
                             currPNN.set(previous, r, d, CandidateNN.Status.BC);
                             if (d < toBeat) {
                                 classCounts[paramId][current] = new int[train.getNumClasses()];
@@ -173,7 +174,7 @@ public class ERP1NN extends OneNearestNeighbour {
                         // --- Check the result
                         if (rrt == LazyAssessNNERP.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
-                            final double d = challenger.getDistance(band);
+                            final double d = challenger.getDistance(r);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
@@ -226,10 +227,20 @@ public class ERP1NN extends OneNearestNeighbour {
         }
         this.g = gValues[paramId / 10];
         this.bandSize = bandSizes[paramId % 10];
+        this.window = ERP.getWindowSize(trainData.length(), bandSize);
     }
 
     @Override
     public String getParamInformationString() {
         return "g=" + this.g + ", bandSize=" + this.bandSize;
+    }
+
+    protected int getParamIdFromWindow(final int currentParamId, final int w, final int n) {
+        double r = 1.0 * w / n;
+        int i = currentParamId;
+        while (i >= 0 && bandSizes[i % 10] != r)
+            i--;
+
+        return i;
     }
 }

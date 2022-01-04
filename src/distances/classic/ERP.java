@@ -137,6 +137,7 @@ public class ERP extends ElasticDistances {
                             // match
                             cost = prev[j - 1] + d12;
                             minWarpingWindow[i][j] = Math.max(absIJ, minWarpingWindow[i - 1][j - 1]);
+//                            minWarpingWindow[i][j] = minWarpingWindow[i - 1][j - 1];
                         }
                     } else {
                         cost = 0;

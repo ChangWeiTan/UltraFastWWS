@@ -1,15 +1,13 @@
 package classifiers.eapNN;
 
-import classifiers.classicNN.OneNearestNeighbour;
+import classifiers.classicNN.ERP1NN;
 import datasets.Sequence;
 import datasets.Sequences;
 import distances.classic.ERP;
 import distances.eap.EAPERP;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNEAPERP;
-import results.TrainingClassificationResults;
-import utils.GenericTools;
+import fastWWS.lazyAssessNNEAP.LazyAssessNNEAPERP;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,48 +18,27 @@ import static distances.classic.ERP.getWindowSize;
  * Super class for ERP-1NN
  * MSM-1NN with no lower bounds
  */
-public class EAPERP1NN extends OneNearestNeighbour {
+public class EAPERP1NN extends ERP1NN {
     // parameters
-    protected double g;                               // g value
-    protected double bandSize;                        // band size in terms of percentage of sequence's length
-    protected int window;
-
-    protected double[] gValues;                       // set of g values
-    protected double[] bandSizes;                     // set of band sizes
-    protected boolean gAndWindowsRefreshed = false;   // indicator if we refresh the params
-
     protected EAPERP distComputer = new EAPERP();
 
     public EAPERP1NN() {
-        this.classifierIdentifier = "ERP-1NN_R1";
+        this.classifierIdentifier = "EAPERP-1NN_R1";
         this.trainingOptions = TrainOpts.LOOCV0;
     }
 
     public EAPERP1NN(final Sequences trainData) {
         this.setTrainingData(trainData);
-        this.classifierIdentifier = "ERP-1NN_R1";
+        this.classifierIdentifier = "EAPERP-1NN_R1";
         this.trainingOptions = TrainOpts.LOOCV0;
     }
 
     public EAPERP1NN(final int paramId, final Sequences trainData) {
-        this.classifierIdentifier = "ERP-1NN_R1";
+        this.classifierIdentifier = "EAPERP-1NN_R1";
         this.setTrainingData(trainData);
         this.setParamsFromParamId(paramId);
         this.bestParamId = paramId;
         this.trainingOptions = TrainOpts.LOOCV0;
-    }
-
-    public void summary() {
-        System.out.println(toString());
-    }
-
-    @Override
-    public String toString() {
-        return "[CLASSIFIER SUMMARY] Classifier: " + this.classifierIdentifier +
-                "\n[CLASSIFIER SUMMARY] training_opts: " + trainingOptions +
-                "\n[CLASSIFIER SUMMARY] g: " + g +
-                "\n[CLASSIFIER SUMMARY] band_size: " + bandSize +
-                "\n[CLASSIFIER SUMMARY] best_param: " + bestParamId;
     }
 
     @Override
@@ -74,12 +51,6 @@ public class EAPERP1NN extends OneNearestNeighbour {
     public double distance(final Sequence first, final Sequence second, final double cutOffValue) {
         final int band = getWindowSize(first.length(), this.bandSize);
         return distComputer.distance(first.data[0], second.data[0], this.g, band, cutOffValue);
-    }
-
-    @Override
-    public TrainingClassificationResults fit(final Sequences trainData) throws Exception {
-        this.setTrainingData(trainData);
-        return loocv0(this.trainData);
     }
 
     /**
@@ -210,43 +181,5 @@ public class EAPERP1NN extends OneNearestNeighbour {
                 }
             }
         }
-    }
-
-    @Override
-    public void setTrainingData(final Sequences trainData) {
-        this.trainData = trainData;
-        this.trainCache = new SequenceStatsCache(trainData, trainData.get(0).length());
-    }
-
-    @Override
-    public void setParamsFromParamId(final int paramId) {
-        if (paramId < 0) return;
-
-        if (paramId < 100 && this.classifierIdentifier.contains("R1")) {
-            this.classifierIdentifier = this.classifierIdentifier.replace("R1", "Rn");
-        }
-        if (!this.gAndWindowsRefreshed) {
-            double stdv = GenericTools.stdv_p(trainData);
-            bandSizes = GenericTools.getInclusive10(0, 0.25);
-            gValues = GenericTools.getInclusive10(0.2 * stdv, stdv);
-            this.gAndWindowsRefreshed = true;
-        }
-        this.g = gValues[paramId / 10];
-        this.bandSize = bandSizes[paramId % 10];
-        this.window = ERP.getWindowSize(trainData.length(), bandSize);
-    }
-
-    @Override
-    public String getParamInformationString() {
-        return "g=" + this.g + ", bandSize=" + this.bandSize;
-    }
-
-    protected int getParamIdFromWindow(final int currentParamId, final int w, final int n) {
-        double r = 1.0 * w / n;
-        int i = currentParamId;
-        while (i >= 0 && bandSizes[i % 10] != r)
-            i--;
-
-        return i;
     }
 }

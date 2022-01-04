@@ -9,7 +9,7 @@ import results.TrainingClassificationResults;
 public class ERPLoocv extends ERP1NN {
     public ERPLoocv() {
         super();
-        this.classifierIdentifier = "EAPERP_1NN-LOOCV";
+        this.classifierIdentifier = "ERP_1NN-LOOCV";
     }
 
     public ERPLoocv(final Sequences trainData) {

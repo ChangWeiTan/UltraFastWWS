@@ -3,7 +3,7 @@ package classifiers.classicNN;
 import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNUCRSuite;
+import fastWWS.lazyAssessNN.LazyAssessNNUCRSuite;
 import results.TrainingClassificationResults;
 
 /**

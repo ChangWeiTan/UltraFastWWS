@@ -65,9 +65,6 @@ public class UltraFastWDTW extends EAPWDTW1NN {
         final ArrayList<AssessNNEAPWDTW> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
-            if (Application.verbose > 1 && current % 10 == 0) {
-                System.out.print(".");
-            }
             final Sequence sCurrent = train.get(current);
 
             challengers.clear();

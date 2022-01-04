@@ -1,10 +1,8 @@
 package application;
 
 import classifiers.*;
-import classifiers.eapNN.EAPERPLoocv;
-import classifiers.eapNN.EAPLoocv;
-import classifiers.eapNN.EAPMSMLoocv;
-import classifiers.eapNN.EAPWDTWLoocv;
+import classifiers.eapFastNN.*;
+import classifiers.eapNN.*;
 import classifiers.classicNN.ERPLoocv;
 import classifiers.fastNN.FastWWSearch;
 import classifiers.classicNN.*;
@@ -116,6 +114,59 @@ public class Application {
     public static TimeSeriesClassifier initTSC(final Sequences trainData) {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
+            /// LCSS distance
+            case "EAPFastLCSSEA":
+                classifier = new EAPFastLCSSEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastLCSS":
+                classifier = new EAPFastLCSS(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastLCSS":
+                classifier = new FastLCSS(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPLCSSLOOCV":
+                classifier = new EAPLCSSLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "LCSSLOOCV":
+                classifier = new LCSSLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+
+            /// TWE distance
+            case "UltraFastTWE2":
+                classifier = new UltraFastTWE2(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastTWE":
+                classifier = new UltraFastTWE(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastTWEEA":
+                classifier = new EAPFastTWEEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastTWE":
+                classifier = new EAPFastTWE(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastTWE":
+                classifier = new FastTWE(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPTWELOOCV":
+                classifier = new EAPTWELoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "TWELOOCV":
+                classifier = new TWELoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
             /// ERP distance
             case "UltraFastERP2":
                 classifier = new UltraFastERP2(paramId, trainData);

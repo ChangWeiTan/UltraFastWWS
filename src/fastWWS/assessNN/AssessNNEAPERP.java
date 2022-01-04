@@ -3,11 +3,10 @@ package fastWWS.assessNN;
 import application.Application;
 import datasets.Sequence;
 import distances.eap.EAPERP;
-import distances.eap.EAPMSM;
 import fastWWS.SequenceStatsCache;
+import fastWWS.lazyAssessNN.LazyAssessNN;
 import results.WarpingPathResults;
 
-import static classifiers.classicNN.MSM1NN.msmParams;
 import static distances.classic.ERP.getWindowSize;
 
 /**
@@ -140,7 +139,7 @@ public class AssessNNEAPERP extends LazyAssessNN {
         switch (status) {
             case Full_ERP:
             case Partial_ERP:
-                return thisD / (query.length());
+                return thisD / query.length();
             case Previous_Band_ERP:
                 return 0.8 * thisD / (query.length());
             case Previous_G_LB_ERP:

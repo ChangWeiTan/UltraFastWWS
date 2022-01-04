@@ -5,7 +5,7 @@ import datasets.Sequences;
 import distances.classic.WDTW;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.LazyAssessNNWDTW;
+import fastWWS.lazyAssessNN.LazyAssessNNWDTW;
 import results.TrainingClassificationResults;
 
 import java.util.ArrayList;

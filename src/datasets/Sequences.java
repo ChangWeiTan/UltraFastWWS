@@ -143,23 +143,44 @@ public class Sequences {
     }
 
     public Sequences reorderClassLabels(Map<Integer, Integer> newOrder) {
-        final Sequences newDataset = new Sequences(this);
+//        final Sequences newDataset = new Sequences(this);
+        final Sequences newDataset = new Sequences(this.size(), this.length(), this.dim());
         newDataset.classMap = new TIntIntHashMap();
         //key = old label, value = new label, easier to build this way, later we swap to new=>old
         if (newOrder == null) {
             newOrder = new HashMap<>();
         }
 
-        int newLabel = 0;
-        for (int oldLabel : classMap.keys()) {
-            newOrder.put(oldLabel, newLabel);
-            newLabel++;
-        }
+//        int newLabel = 0;
+//        for (int oldLabel : classMap.keys()) {
+//            newOrder.put(oldLabel, newLabel);
+//            newLabel++;
+//        }
+//
+//        final int size = this.size();
+//        for (int i = 0; i < size; i++) {
+//            final Integer oldLabel = this.timeseriesData.get(i).classificationLabel;
+//            this.timeseriesData.get(i).classificationLabel = newOrder.get(oldLabel);
+//            newDataset.add(this.timeseriesData.get(i));
+//        }
 
         final int size = this.size();
+
+        int newLabel = 0;
+        int tempLabel;
+
         for (int i = 0; i < size; i++) {
             final Integer oldLabel = this.timeseriesData.get(i).classificationLabel;
-            this.timeseriesData.get(i).classificationLabel = newOrder.get(oldLabel);
+
+            if (newOrder.containsKey(oldLabel)) {
+                tempLabel = newOrder.get(oldLabel);
+            } else {
+                newOrder.put(oldLabel, newLabel);
+                tempLabel = newLabel;
+                newLabel++;
+            }
+            this.timeseriesData.get(i).classificationLabel = tempLabel;
+
             newDataset.add(this.timeseriesData.get(i));
         }
 

@@ -4,6 +4,7 @@ import application.Application;
 import datasets.Sequence;
 import distances.eap.EAPDTW;
 import fastWWS.SequenceStatsCache;
+import fastWWS.lazyAssessNN.LazyAssessNN;
 import results.WarpingPathResults;
 
 /**

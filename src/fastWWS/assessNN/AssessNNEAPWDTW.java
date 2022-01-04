@@ -2,9 +2,9 @@ package fastWWS.assessNN;
 
 import application.Application;
 import datasets.Sequence;
-import distances.eap.EAPDTW;
 import distances.eap.EAPWDTW;
 import fastWWS.SequenceStatsCache;
+import fastWWS.lazyAssessNN.LazyAssessNN;
 
 /**
  * AssessNN with EAP

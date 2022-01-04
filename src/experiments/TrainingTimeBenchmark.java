@@ -21,11 +21,13 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=ECG200",
-            "-classifier=UltraFastWDTW2", // see classifiers in TimeSeriesClassifier.java
-//            "-classifier=UltraFastMSM2",
-//            "-classifier=EAPFastMSM",
-//            "-classifier=EAPFastMSMEA",
+            "-problem=Adiac",
+//            "-classifier=UltraFastWDTW2", // see classifiers in TimeSeriesClassifier.java
+            "-classifier=ERPLOOCV",
+//            "-classifier=EAPFastTWEEA",
+//            "-classifier=UltraFastTWE",
+//            "-classifier=TWELOOCV",
+//            "-classifier=EAPFastERP",
             "-paramId=-1",
             "-cpu=1",
             "-verbose=1",
@@ -36,7 +38,7 @@ public class TrainingTimeBenchmark {
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-//        args = testArgs;
+        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
@@ -153,7 +155,7 @@ public class TrainingTimeBenchmark {
             return;
 
         DatasetLoader loader = new DatasetLoader();
-        Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm);
+        Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm).reorderClassLabels(null);
         trainData.summary();
 
         TimeSeriesClassifier classifier = Application.initTSC(trainData);
@@ -166,7 +168,7 @@ public class TrainingTimeBenchmark {
 
         double totalTime = trainingResults.elapsedTimeNanoSeconds;
         if (Application.doEvaluation) {
-            Sequences testData = loader.readUCRTest(problem, Application.datasetPath, Application.znorm);
+            Sequences testData = loader.readUCRTest(problem, Application.datasetPath, Application.znorm).reorderClassLabels(trainData.getInitialClassLabels());
             testData.summary();
             ClassificationResults classificationResults = classifier.evaluate(testData);
             testData.summary();

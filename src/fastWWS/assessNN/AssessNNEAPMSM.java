@@ -4,6 +4,7 @@ import application.Application;
 import datasets.Sequence;
 import distances.eap.EAPMSM;
 import fastWWS.SequenceStatsCache;
+import fastWWS.lazyAssessNN.LazyAssessNN;
 
 import static classifiers.classicNN.MSM1NN.msmParams;
 
