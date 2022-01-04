@@ -38,7 +38,7 @@ public class TrainingTimeBenchmark {
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-        args = testArgs;
+//        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
