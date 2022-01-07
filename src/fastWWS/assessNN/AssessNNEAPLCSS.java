@@ -71,16 +71,22 @@ public class AssessNNEAPLCSS extends LazyAssessNN {
         getUpperBound(bsf);
     }
 
-    public void getUpperBound() {
-        this.upperBoundDistance = 1;
+    public void getUpperBound(double[] epsilons, int[] deltas) {
+        this.upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
+                epsilons[epsilons.length - 1], deltas[0],
+                Double.POSITIVE_INFINITY);
     }
 
-    public void getUpperBound(int paramId) {
-        this.upperBoundDistance = 1;
+    public void getUpperBound(int paramId, double[] epsilons, int[] deltas) {
+        this.upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
+                epsilons[paramId / 10], deltas[paramId % 10],
+                Double.POSITIVE_INFINITY);
     }
 
-    public void getUpperBound(final double scoreToBeat) {
-        this.upperBoundDistance = 1;
+    public void getUpperBound(final double scoreToBeat, double[] epsilons, int[] deltas) {
+        this.upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
+                epsilons[epsilons.length - 1], deltas[0],
+                scoreToBeat);
     }
 
     private void setCurrentDeltaAndEpsilon(final int delta, final double epsilon) {
@@ -110,7 +116,7 @@ public class AssessNNEAPLCSS extends LazyAssessNN {
             case None:
             case Previous_LCSS:
             case Partial_LCSS:
-                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentEpsilon, currentDelta, Double.POSITIVE_INFINITY);
                 minDist = res.distance;
                 minWindowValidity = res.distanceFromDiagonal;
@@ -129,9 +135,9 @@ public class AssessNNEAPLCSS extends LazyAssessNN {
         setCurrentDeltaAndEpsilon(delta, epsilon);
         switch (status) {
             case None:
-            case Previous_LCSS:
             case Partial_LCSS:
-                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_LB;
+            case Previous_LCSS:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentEpsilon, currentDelta, bestSoFar);
                 if (res.earlyAbandon) {
                     Application.eaCount++;

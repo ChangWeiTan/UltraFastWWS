@@ -115,6 +115,14 @@ public class Application {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
             /// LCSS distance
+            case "UltraFastLCSS2":
+                classifier = new UltraFastLCSS2(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastLCSS":
+                classifier = new UltraFastLCSS(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "EAPFastLCSSEA":
                 classifier = new EAPFastLCSSEA(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
@@ -138,6 +146,10 @@ public class Application {
 
 
             /// TWE distance
+            case "UltraFastTWE3":
+                classifier = new UltraFastTWE3(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastTWE2":
                 classifier = new UltraFastTWE2(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
@@ -168,6 +180,10 @@ public class Application {
                 break;
 
             /// ERP distance
+            case "UltraFastERP3":
+                classifier = new UltraFastERP3(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastERP2":
                 classifier = new UltraFastERP2(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
@@ -198,6 +214,10 @@ public class Application {
                 break;
 
             /// MSM distance
+            case "UltraFastMSM3":
+                classifier = new UltraFastMSM3(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastMSM2":
                 classifier = new UltraFastMSM2(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
@@ -228,6 +248,10 @@ public class Application {
                 break;
 
             /// WDTW distance
+            case "UltraFastWDTW3":
+                classifier = new UltraFastWDTW3(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastWDTW2":
                 classifier = new UltraFastWDTW2(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;

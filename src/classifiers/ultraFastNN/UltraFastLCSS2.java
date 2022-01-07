@@ -3,7 +3,6 @@ package classifiers.ultraFastNN;
 import classifiers.eapNN.EAPLCSS1NN;
 import datasets.Sequence;
 import datasets.Sequences;
-import distances.classic.LCSS;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
 import fastWWS.assessNN.AssessNNEAPLCSS;
@@ -17,22 +16,22 @@ import java.util.stream.IntStream;
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
-public class UltraFastLCSS extends EAPLCSS1NN {
+public class UltraFastLCSS2 extends EAPLCSS1NN {
     final int ubParam = 0;
 
-    public UltraFastLCSS() {
+    public UltraFastLCSS2() {
         super();
-        this.classifierIdentifier = "UltraFastLCSS";
+        this.classifierIdentifier = "UltraFastLCSS2";
     }
 
-    public UltraFastLCSS(final Sequences trainData) {
+    public UltraFastLCSS2(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "UltraFastLCSS";
+        this.classifierIdentifier = "UltraFastLCSS2";
     }
 
-    public UltraFastLCSS(final int paramId, final Sequences trainData) {
+    public UltraFastLCSS2(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "UltraFastLCSS";
+        this.classifierIdentifier = "UltraFastLCSS2";
     }
 
     @Override
@@ -78,6 +77,7 @@ public class UltraFastLCSS extends EAPLCSS1NN {
             // ============================================================
             // do the largest window (full DTW) first
             // get paramid and initialise
+            double[][] upperBounds = new double[train.size()][train.size()];
             int paramId = nParams - 1;
             int nextUBParam = paramId - 9;
             setParamsFromParamId(paramId);
@@ -110,11 +110,49 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                         challenger.getUpperBound();
                         bestSoFar = challenger.upperBoundDistance;
                         candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                        upperBounds[current][previous] = bestSoFar;
+                        upperBounds[previous][current] = bestSoFar;
                     } else {
                         bestSoFar = candidateNNS[nextUBParam][current].distance;
                     }
                 } else {
-                    bestSoFar = Math.max(toBeat, prevNN.distance);
+                    if (upperBounds[current][currPNN.nnIndex] == 0) {
+                        if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
+                            upperBounds[current][currPNN.nnIndex] = candidateNNS[nextUBParam][current].distance;
+                        else
+                            upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                    candidateNNS[nextUBParam][current].distance, nextUBParam);
+                        upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                        // update NNS
+                        if (upperBounds[current][currPNN.nnIndex] < candidateNNS[nextUBParam][current].distance) {
+                            candidateNNS[nextUBParam][current].set(
+                                    currPNN.nnIndex,
+                                    upperBounds[current][currPNN.nnIndex],
+                                    CandidateNN.Status.BC
+                            );
+                        }
+                    }
+                    if (prevNN.nnIndex >= 0) {
+                        if (upperBounds[previous][prevNN.nnIndex] == 0) {
+                            if (prevNN.nnIndex == candidateNNS[nextUBParam][previous].nnIndex)
+                                upperBounds[previous][prevNN.nnIndex] = candidateNNS[nextUBParam][previous].distance;
+                            else
+                                upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                        candidateNNS[nextUBParam][previous].distance, nextUBParam);
+                            upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                            // update NNS
+                            if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[nextUBParam][previous].distance) {
+                                candidateNNS[nextUBParam][previous].set(
+                                        prevNN.nnIndex,
+                                        upperBounds[previous][prevNN.nnIndex],
+                                        CandidateNN.Status.BC
+                                );
+                            }
+                        }
+                        bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                    } else {
+                        bestSoFar = upperBounds[current][currPNN.nnIndex];
+                    }
                 }
                 AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
@@ -183,7 +221,8 @@ public class UltraFastLCSS extends EAPLCSS1NN {
             // remember the NN at w+1
             int nnAtPreviousWindow = 0;
             for (paramId = nParams - 2; paramId > -1; paramId--) {
-                if (paramId % 10 == 0) nextUBParam = nextUBParam - 10;
+                if (paramId % 10 == 0)
+                    nextUBParam = Math.max(nextUBParam - 10, 0);
 
                 setParamsFromParamId(paramId);
                 currPNN = candidateNNS[paramId][current];
@@ -203,11 +242,49 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                                 challenger.getUpperBound();
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
+                                upperBounds[current][previous] = bestSoFar;
+                                upperBounds[previous][current] = bestSoFar;
                             } else {
                                 bestSoFar = candidateNNS[nextUBParam][current].distance;
                             }
                         } else {
-                            bestSoFar = toBeat;
+                            if (upperBounds[current][currPNN.nnIndex] == 0) {
+                                if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
+                                    upperBounds[current][currPNN.nnIndex] = candidateNNS[nextUBParam][current].distance;
+                                else
+                                    upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                            candidateNNS[nextUBParam][current].distance, nextUBParam);
+                                upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                                // update NNS
+                                if (upperBounds[current][currPNN.nnIndex] < candidateNNS[nextUBParam][current].distance) {
+                                    candidateNNS[nextUBParam][current].set(
+                                            currPNN.nnIndex,
+                                            upperBounds[current][currPNN.nnIndex],
+                                            CandidateNN.Status.BC
+                                    );
+                                }
+                            }
+                            if (prevNN.nnIndex >= 0) {
+                                if (upperBounds[previous][prevNN.nnIndex] == 0) {
+                                    if (prevNN.nnIndex == candidateNNS[nextUBParam][previous].nnIndex)
+                                        upperBounds[previous][prevNN.nnIndex] = candidateNNS[nextUBParam][previous].distance;
+                                    else
+                                        upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                candidateNNS[nextUBParam][previous].distance, nextUBParam);
+                                    upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                                    // update NNS
+                                    if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[nextUBParam][previous].distance) {
+                                        candidateNNS[nextUBParam][previous].set(
+                                                prevNN.nnIndex,
+                                                upperBounds[previous][prevNN.nnIndex],
+                                                CandidateNN.Status.BC
+                                        );
+                                    }
+                                }
+                                bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                            } else {
+                                bestSoFar = upperBounds[current][currPNN.nnIndex];
+                            }
                         }
                         final AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
@@ -238,11 +315,49 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                             challenger.getUpperBound();
                             bestSoFar = challenger.upperBoundDistance;
                             candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                            upperBounds[current][previous] = bestSoFar;
+                            upperBounds[previous][current] = bestSoFar;
                         } else {
                             bestSoFar = candidateNNS[nextUBParam][current].distance;
                         }
                     } else {
-                        bestSoFar = Math.max(toBeat, prevNN.distance);
+                        if (upperBounds[current][currPNN.nnIndex] == 0) {
+                            if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
+                                upperBounds[current][currPNN.nnIndex] = candidateNNS[nextUBParam][current].distance;
+                            else
+                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                        candidateNNS[nextUBParam][current].distance, nextUBParam);
+                            upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                            // update NNS
+                            if (upperBounds[current][currPNN.nnIndex] < candidateNNS[nextUBParam][current].distance) {
+                                candidateNNS[nextUBParam][current].set(
+                                        currPNN.nnIndex,
+                                        upperBounds[current][currPNN.nnIndex],
+                                        CandidateNN.Status.BC
+                                );
+                            }
+                        }
+                        if (prevNN.nnIndex >= 0) {
+                            if (upperBounds[previous][prevNN.nnIndex] == 0) {
+                                if (prevNN.nnIndex == candidateNNS[nextUBParam][previous].nnIndex)
+                                    upperBounds[previous][prevNN.nnIndex] = candidateNNS[nextUBParam][previous].distance;
+                                else
+                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                            candidateNNS[nextUBParam][previous].distance, nextUBParam);
+                                upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                                // update NNS
+                                if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[nextUBParam][previous].distance) {
+                                    candidateNNS[nextUBParam][previous].set(
+                                            prevNN.nnIndex,
+                                            upperBounds[previous][prevNN.nnIndex],
+                                            CandidateNN.Status.BC
+                                    );
+                                }
+                            }
+                            bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                        } else {
+                            bestSoFar = upperBounds[current][currPNN.nnIndex];
+                        }
                     }
                     AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
@@ -294,11 +409,49 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                                 challenger.getUpperBound();
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                                upperBounds[current][previous] = bestSoFar;
+                                upperBounds[previous][current] = bestSoFar;
                             } else {
                                 bestSoFar = candidateNNS[nextUBParam][current].distance;
                             }
                         } else {
-                            bestSoFar = Math.max(toBeat, prevNN.distance);
+                            if (upperBounds[current][currPNN.nnIndex] == 0) {
+                                if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
+                                    upperBounds[current][currPNN.nnIndex] = candidateNNS[nextUBParam][current].distance;
+                                else
+                                    upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                            candidateNNS[nextUBParam][current].distance, nextUBParam);
+                                upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                                // update NNS
+                                if (upperBounds[current][currPNN.nnIndex] < candidateNNS[nextUBParam][current].distance) {
+                                    candidateNNS[nextUBParam][current].set(
+                                            currPNN.nnIndex,
+                                            upperBounds[current][currPNN.nnIndex],
+                                            CandidateNN.Status.BC
+                                    );
+                                }
+                            }
+                            if (prevNN.nnIndex >= 0) {
+                                if (upperBounds[previous][prevNN.nnIndex] == 0) {
+                                    if (prevNN.nnIndex == candidateNNS[nextUBParam][previous].nnIndex)
+                                        upperBounds[previous][prevNN.nnIndex] = candidateNNS[nextUBParam][previous].distance;
+                                    else
+                                        upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                candidateNNS[nextUBParam][previous].distance, nextUBParam);
+                                    upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                                    // update NNS
+                                    if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[nextUBParam][previous].distance) {
+                                        candidateNNS[nextUBParam][previous].set(
+                                                prevNN.nnIndex,
+                                                upperBounds[previous][prevNN.nnIndex],
+                                                CandidateNN.Status.BC
+                                        );
+                                    }
+                                }
+                                bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                            } else {
+                                bestSoFar = upperBounds[current][currPNN.nnIndex];
+                            }
                         }
                         rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
@@ -350,9 +503,20 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                         tmp--;
                         this.setParamsFromParamId(tmp);
                     }
-
                 }
             }
         }
+    }
+
+    private double getUB(double[] query, double[] reference, double cutoff) {
+        return distComputer.distance(query, reference,
+                epsilons[epsilons.length - 1], deltas[0],
+                cutoff);
+    }
+
+    private double getUB(double[] query, double[] reference, double cutoff, int paramId) {
+        return distComputer.distance(query, reference,
+                epsilons[paramId / 10], deltas[paramId % 10],
+                cutoff);
     }
 }

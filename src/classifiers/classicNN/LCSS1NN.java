@@ -231,4 +231,11 @@ public class LCSS1NN extends OneNearestNeighbour {
         return "delta=" + this.delta + ", epsilon=" + this.epsilon;
     }
 
+    protected int getParamIdFromWindow(final int currentParamId, final int r) {
+                int i = currentParamId;
+        while (i >= 0 && deltas[i % 10] != r)
+            i--;
+
+        return i;
+    }
 }

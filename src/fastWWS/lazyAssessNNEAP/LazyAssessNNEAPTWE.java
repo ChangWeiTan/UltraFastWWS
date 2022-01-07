@@ -106,6 +106,7 @@ public class LazyAssessNNEAPTWE extends LazyAssessNN {
             case Partial_LB_TWE:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBTWED(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_TWE;
@@ -139,6 +140,7 @@ public class LazyAssessNNEAPTWE extends LazyAssessNN {
             case Partial_LB_TWE:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryContinueLBTWED(scoreToBeat);
+                Application.lbCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_TWE;

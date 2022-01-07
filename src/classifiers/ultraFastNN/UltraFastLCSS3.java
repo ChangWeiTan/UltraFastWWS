@@ -3,11 +3,11 @@ package classifiers.ultraFastNN;
 import classifiers.eapNN.EAPLCSS1NN;
 import datasets.Sequence;
 import datasets.Sequences;
-import distances.classic.LCSS;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
 import fastWWS.assessNN.AssessNNEAPLCSS;
 import results.TrainingClassificationResults;
+import utils.EfficientSymmetricMatrix;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,22 +17,22 @@ import java.util.stream.IntStream;
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
-public class UltraFastLCSS extends EAPLCSS1NN {
+public class UltraFastLCSS3 extends EAPLCSS1NN {
     final int ubParam = 0;
 
-    public UltraFastLCSS() {
+    public UltraFastLCSS3() {
         super();
-        this.classifierIdentifier = "UltraFastLCSS";
+        this.classifierIdentifier = "UltraFastLCSS3";
     }
 
-    public UltraFastLCSS(final Sequences trainData) {
+    public UltraFastLCSS3(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "UltraFastLCSS";
+        this.classifierIdentifier = "UltraFastLCSS3";
     }
 
-    public UltraFastLCSS(final int paramId, final Sequences trainData) {
+    public UltraFastLCSS3(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "UltraFastLCSS";
+        this.classifierIdentifier = "UltraFastLCSS3";
     }
 
     @Override
@@ -48,7 +48,9 @@ public class UltraFastLCSS extends EAPLCSS1NN {
         }
 
         // initialise
+        final int nUb = 10;
         double bestSoFar;
+        EfficientSymmetricMatrix upperBounds = new EfficientSymmetricMatrix(train.size(), nUb);
 
         candidateNNS = new CandidateNN[nParams][train.size()];
         for (int paramId = 0; paramId < nParams; ++paramId) {
@@ -80,6 +82,7 @@ public class UltraFastLCSS extends EAPLCSS1NN {
             // get paramid and initialise
             int paramId = nParams - 1;
             int nextUBParam = paramId - 9;
+            int ubCount = 0;
             setParamsFromParamId(paramId);
 
             challengers.clear();
@@ -110,11 +113,42 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                         challenger.getUpperBound();
                         bestSoFar = challenger.upperBoundDistance;
                         candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                        upperBounds.put(current, previous, bestSoFar, ubCount);
                     } else {
                         bestSoFar = candidateNNS[nextUBParam][current].distance;
                     }
                 } else {
-                    bestSoFar = Math.max(toBeat, prevNN.distance);
+                    double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
+                    if (a == 0) {
+                        if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
+                            upperBounds.put(current, currPNN.nnIndex, candidateNNS[nextUBParam][current].distance, ubCount);
+                        else
+                            upperBounds.put(current, currPNN.nnIndex,
+                                    getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                            candidateNNS[nextUBParam][current].distance, nextUBParam), ubCount);
+                        // update NNS
+                        a = upperBounds.get(current, currPNN.nnIndex, ubCount);
+                        if (a < candidateNNS[nextUBParam][current].distance)
+                            candidateNNS[nextUBParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
+                    }
+                    if (prevNN.nnIndex >= 0) {
+                        double b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
+                        if (b == 0) {
+                            if (prevNN.nnIndex == candidateNNS[nextUBParam][previous].nnIndex)
+                                upperBounds.put(previous, prevNN.nnIndex, candidateNNS[nextUBParam][previous].distance, ubCount);
+                            else
+                                upperBounds.put(previous, prevNN.nnIndex,
+                                        getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                candidateNNS[nextUBParam][previous].distance, nextUBParam), ubCount);
+                            b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
+                            // update NNS
+                            if (b < candidateNNS[nextUBParam][previous].distance)
+                                candidateNNS[nextUBParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
+                        }
+                        bestSoFar = Math.max(a, b);
+                    } else {
+                        bestSoFar = a;
+                    }
                 }
                 AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
@@ -350,9 +384,20 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                         tmp--;
                         this.setParamsFromParamId(tmp);
                     }
-
                 }
             }
         }
+    }
+
+    private double getUB(double[] query, double[] reference, double cutoff) {
+        return distComputer.distance(query, reference,
+                epsilons[epsilons.length - 1], deltas[0],
+                cutoff);
+    }
+
+    private double getUB(double[] query, double[] reference, double cutoff, int paramId) {
+        return distComputer.distance(query, reference,
+                epsilons[paramId / 10], deltas[paramId % 10],
+                cutoff);
     }
 }

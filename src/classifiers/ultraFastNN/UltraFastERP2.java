@@ -155,7 +155,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                 // --- Check the result
                 if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                     final int r = challenger.getMinWindowValidityForFullDistance();
-                    final double d = challenger.getDistance(r);
+                    final double d = challenger.getDistance(band);
                     currPNN.set(previous, r, d, CandidateNN.Status.BC);
                     if (d < toBeat) {
                         classCounts[paramId][current] = new int[train.getNumClasses()];
@@ -174,7 +174,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                 // --- Check the result
                 if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                     final int r = challenger.getMinWindowValidityForFullDistance();
-                    final double d = challenger.getDistance(r);
+                    final double d = challenger.getDistance(band);
                     int w = ERP.getWindowSize(train.length(), bandSize);
                     prevNN.set(current, r, d, CandidateNN.Status.NN);
                     if (d < toBeat) {
@@ -284,7 +284,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                         // --- Check the result
                         if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                             r = challenger.getMinWindowValidityForFullDistance();
-                            d = challenger.getDistance(r);
+                            d = challenger.getDistance(band);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
@@ -352,7 +352,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                     // --- Check the result
                     if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                         r = challenger.getMinWindowValidityForFullDistance();
-                        d = challenger.getDistance(r);
+                        d = challenger.getDistance(band);
                         currPNN.set(previous, r, d, CandidateNN.Status.BC);
                         if (d < toBeat) {
                             classCounts[paramId][current] = new int[train.getNumClasses()];
@@ -371,7 +371,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                     // --- Check the result
                     if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                         r = challenger.getMinWindowValidityForFullDistance();
-                        d = challenger.getDistance(r);
+                        d = challenger.getDistance(band);
                         prevNN.set(current, r, d, CandidateNN.Status.NN);
                         if (d < toBeat) {
                             classCounts[paramId][previous] = new int[train.getNumClasses()];
@@ -441,7 +441,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                         // --- Check the result
                         if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                             r = challenger.getMinWindowValidityForFullDistance();
-                            d = challenger.getDistance(r);
+                            d = challenger.getDistance(band);
                             currPNN.set(previous, r, d, CandidateNN.Status.BC);
                             if (d < toBeat) {
                                 nnAtPreviousWindow = i;
@@ -461,7 +461,7 @@ public class UltraFastERP2 extends EAPERP1NN {
                         // --- Check the result
                         if (rrt == AssessNNEAPERP.RefineReturnType.New_best) {
                             r = challenger.getMinWindowValidityForFullDistance();
-                            d = challenger.getDistance(r);
+                            d = challenger.getDistance(band);
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];

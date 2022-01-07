@@ -90,20 +90,20 @@ public class LazyAssessNNLCSS extends LazyAssessNN {
             case None:
             case Previous_LB_LCSS:
             case Previous_LCSS:
-                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 indexStoppedLB = 0;
                 minDist = 0;
             case Partial_LB_LCSS:
-                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 tryFullLBLCSS();
                 if (minDist > bestMinDist) bestMinDist = minDist;
-                if (bestMinDist > scoreToBeat) {
+                if (bestMinDist >= scoreToBeat) {
                     if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_LCSS;
                     else status = LBStatus.Full_LB_LCSS;
                     return RefineReturnType.Pruned_with_LB;
                 } else status = LBStatus.Full_LB_LCSS;
             case Full_LB_LCSS:
-                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentEpsilon, currentDelta);
                 minDist = res.distance;
                 minWindowValidity = res.distanceFromDiagonal;

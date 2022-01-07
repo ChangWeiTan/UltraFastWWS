@@ -215,4 +215,21 @@ public class EAPTWE extends ElasticDistances {
             return POSITIVE_INFINITY;
         }
     }
+
+    public double upperBoundDistance(double[] lines, double[] cols, double nu, double lambda, double cutoff) {
+        final int m = lines.length;
+
+        int i;
+        final double nu2 = nu * 2;
+
+        double dist = dist(lines[0], cols[0]);
+
+        for (i = 1; i < m; i++) {
+            dist += dist(lines[i], cols[i]) + dist(lines[i - 1], cols[i - 1]) + nu2;
+            //Early abandon
+            if (dist >= cutoff) return Double.POSITIVE_INFINITY;
+        }
+
+        return dist;
+    }
 }
