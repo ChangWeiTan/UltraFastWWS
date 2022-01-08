@@ -103,14 +103,14 @@ public class UltraFastTWE2 extends EAPTWE1NN {
                 // --- First we want to beat the current best candidate:
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
-                    if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
+                    if (upperBounds[current][previous] == 0) {
                         challenger.getUpperBound(nextUBParam);
                         bestSoFar = challenger.upperBoundDistance;
                         candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                         upperBounds[current][previous] = bestSoFar;
                         upperBounds[previous][current] = bestSoFar;
                     } else {
-                        bestSoFar = candidateNNS[nextUBParam][current].distance;
+                        bestSoFar = upperBounds[current][previous];
                     }
                 } else {
                     if (upperBounds[current][currPNN.nnIndex] == 0) {
@@ -218,14 +218,14 @@ public class UltraFastTWE2 extends EAPTWE1NN {
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[nextUBParam][previous].distance == Double.POSITIVE_INFINITY) {
+                            if (upperBounds[current][previous] == 0) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                                 upperBounds[current][previous] = bestSoFar;
                                 upperBounds[previous][current] = bestSoFar;
                             } else {
-                                bestSoFar = candidateNNS[nextUBParam][previous].distance;
+                                bestSoFar = upperBounds[current][previous];
                             }
                         } else {
                             if (upperBounds[current][currPNN.nnIndex] == 0) {
@@ -290,14 +290,14 @@ public class UltraFastTWE2 extends EAPTWE1NN {
                     // --- First we want to beat the current best candidate:
                     double toBeat = currPNN.distance;
                     if (toBeat == Double.POSITIVE_INFINITY) {
-                        if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
+                        if (upperBounds[current][previous] == 0) {
                             challenger.getUpperBound(nextUBParam);
                             bestSoFar = challenger.upperBoundDistance;
                             candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                             upperBounds[current][previous] = bestSoFar;
                             upperBounds[previous][current] = bestSoFar;
                         } else {
-                            bestSoFar = candidateNNS[nextUBParam][current].distance;
+                            bestSoFar = upperBounds[current][previous];
                         }
                     } else {
                         if (upperBounds[current][currPNN.nnIndex] == 0) {
@@ -381,14 +381,14 @@ public class UltraFastTWE2 extends EAPTWE1NN {
                         // --- First we want to beat the current best candidate:
                         toBeat = currPNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
+                            if (upperBounds[current][previous] == 0) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                                 upperBounds[current][previous] = bestSoFar;
                                 upperBounds[previous][current] = bestSoFar;
                             } else {
-                                bestSoFar = candidateNNS[nextUBParam][current].distance;
+                                bestSoFar = upperBounds[current][previous];
                             }
                         } else {
                             if (upperBounds[current][currPNN.nnIndex] == 0) {
@@ -475,14 +475,18 @@ public class UltraFastTWE2 extends EAPTWE1NN {
     }
 
     private double getUB(double[] query, double[] reference, double cutoff) {
-        return distComputer.distance(query, reference,
+        double a = distComputer.distance(query, reference,
                 tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
                 cutoff);
+        if (a >= Double.MAX_VALUE) return cutoff;
+        return a;
     }
 
     private double getUB(double[] query, double[] reference, double cutoff, int paramId) {
-        return distComputer.distance(query, reference,
+        double a = distComputer.distance(query, reference,
                 tweNuParams[paramId / 10], tweLamdaParams[paramId % 10],
                 cutoff);
+        if (a >= Double.MAX_VALUE) return cutoff;
+        return a;
     }
 }

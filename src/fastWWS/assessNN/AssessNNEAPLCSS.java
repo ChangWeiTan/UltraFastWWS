@@ -116,7 +116,8 @@ public class AssessNNEAPLCSS extends LazyAssessNN {
             case None:
             case Previous_LCSS:
             case Partial_LCSS:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat)
+                    return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentEpsilon, currentDelta, Double.POSITIVE_INFINITY);
                 minDist = res.distance;
                 minWindowValidity = res.distanceFromDiagonal;
@@ -137,7 +138,8 @@ public class AssessNNEAPLCSS extends LazyAssessNN {
             case None:
             case Partial_LCSS:
             case Previous_LCSS:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                if (bestMinDist >= scoreToBeat)
+                    return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentEpsilon, currentDelta, bestSoFar);
                 if (res.earlyAbandon) {
                     Application.eaCount++;

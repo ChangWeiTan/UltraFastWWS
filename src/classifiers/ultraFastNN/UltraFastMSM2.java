@@ -442,6 +442,8 @@ public class UltraFastMSM2 extends EAPMSM1NN {
     }
 
     private double getUB(double[] query, double[] reference, double cutoff) {
-        return distComputer.distance(query, reference, msmParams[ubParam], cutoff);
+        double a = distComputer.distance(query, reference, msmParams[ubParam], cutoff);
+        if (a >= Double.MAX_VALUE) return cutoff;
+        return a;
     }
 }

@@ -18,7 +18,6 @@ import java.util.stream.IntStream;
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
 public class UltraFastWDTW2 extends EAPWDTW1NN {
-    EAPDTW dtwComputer = new EAPDTW();
     final int ubParam = 0;
 
     public UltraFastWDTW2() {
@@ -108,6 +107,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                 if (toBeat == Double.POSITIVE_INFINITY) {
 //                    challenger.tryEuclidean();
 //                    bestSoFar = challenger.euclideanDistance;
+//                    candidateNNS[ubParam][current].set(previous, 0, bestSoFar, CandidateNN.Status.BC);
 //                    upperBounds[current][previous] = bestSoFar;
 //                    upperBounds[previous][current] = bestSoFar;
                     if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
@@ -219,6 +219,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                         if (toBeat == Double.POSITIVE_INFINITY) {
 //                            challenger.tryEuclidean();
 //                            bestSoFar = challenger.euclideanDistance;
+//                            candidateNNS[ubParam][previous].set(current, 0, bestSoFar, CandidateNN.Status.BC);
 //                            upperBounds[current][previous] = bestSoFar;
 //                            upperBounds[previous][current] = bestSoFar;
                             if (candidateNNS[ubParam][previous].distance == Double.POSITIVE_INFINITY) {
@@ -287,6 +288,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                     if (toBeat == Double.POSITIVE_INFINITY) {
 //                        challenger.tryEuclidean();
 //                        bestSoFar = challenger.euclideanDistance;
+//                        candidateNNS[ubParam][current].set(previous, 0, bestSoFar, CandidateNN.Status.BC);
 //                        upperBounds[current][previous] = bestSoFar;
 //                        upperBounds[previous][current] = bestSoFar;
                         if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
@@ -375,6 +377,7 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                         if (toBeat == Double.POSITIVE_INFINITY) {
 //                            challenger.tryEuclidean();
 //                            bestSoFar = challenger.euclideanDistance;
+//                            candidateNNS[ubParam][current].set(previous, 0, bestSoFar, CandidateNN.Status.BC);
 //                            upperBounds[current][previous] = bestSoFar;
 //                            upperBounds[previous][current] = bestSoFar;
                             if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {

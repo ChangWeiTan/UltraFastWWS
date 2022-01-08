@@ -115,6 +115,10 @@ public class Application {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
             /// LCSS distance
+            case "UltraFastLCSS3":
+                classifier = new UltraFastLCSS3(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastLCSS2":
                 classifier = new UltraFastLCSS2(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;

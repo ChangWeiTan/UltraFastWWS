@@ -55,18 +55,12 @@ public class AssessNNEAPTWE extends LazyAssessNN {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
                 tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
                 Double.POSITIVE_INFINITY);
-//        upperBoundDistance = distComputer.upperBoundDistance(query.data[0], reference.data[0],
-//                tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
-//                Double.POSITIVE_INFINITY);
     }
 
     public void getUpperBound(int paramId) {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
                 tweNuParams[paramId / 10], tweLamdaParams[paramId % 10],
                 Double.POSITIVE_INFINITY);
-//        upperBoundDistance = distComputer.upperBoundDistance(query.data[0], reference.data[0],
-//                tweNuParams[paramId / 10], tweLamdaParams[paramId % 10],
-//                Double.POSITIVE_INFINITY);
     }
 
     @Override
@@ -74,9 +68,6 @@ public class AssessNNEAPTWE extends LazyAssessNN {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
                 tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
                 scoreToBeat);
-//        upperBoundDistance = distComputer.upperBoundDistance(query.data[0], reference.data[0],
-//                tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
-//                scoreToBeat);
     }
 
     public void getUpperBound(int paramId, final double scoreToBeat) {
