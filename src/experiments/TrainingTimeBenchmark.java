@@ -21,12 +21,12 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=Yoga",
-//            "-classifier=UltraFastLCSS", // see classifiers in TimeSeriesClassifier.java
-            "-classifier=EAPFastLCSS",
-            "-classifier=UltraFastLCSS",
+            "-problem=Beef",
+//            "-classifier=UltraFastTWE2", // see classifiers in TimeSeriesClassifier.java
+            "-classifier=EAPFastTWE",
+            "-classifier=UltraFastTWE4",
 //            "-classifier=UltraFastLCSS2",
-//            "-classifier=UltraFastWDTW3",
+//            "-classifier=UltraFastLCSS3",
 //            "-classifier=TWELOOCV",
 //            "-classifier=EAPFastMSM",
             "-paramId=-1",
@@ -39,7 +39,7 @@ public class TrainingTimeBenchmark {
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-//        args = testArgs;
+        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))

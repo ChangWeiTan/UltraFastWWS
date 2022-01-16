@@ -104,6 +104,22 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
         }
     }
 
+    public void tryL1() {
+        while (indexStoppedED < query.length()) {
+            euclideanDistance += Math.abs(query.value(indexStoppedED) - reference.value(indexStoppedED));
+            nOperationsED++;
+            indexStoppedED++;
+        }
+    }
+
+    public void tryL1(final double scoreToBeat) {
+        while (indexStoppedED < query.length() && euclideanDistance <= scoreToBeat) {
+            euclideanDistance += Math.abs(query.value(indexStoppedED) - reference.value(indexStoppedED));
+            nOperationsED++;
+            indexStoppedED++;
+        }
+    }
+
     public void getUpperBound() {
         tryEuclidean();
         this.upperBoundDistance = euclideanDistance;

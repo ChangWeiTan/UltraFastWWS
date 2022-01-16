@@ -95,6 +95,25 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
         }
     }
 
+    public RefineReturnType tryToBeat(final double scoreToBeat, final double[] weightVector) {
+        setCurrentWeightVector(weightVector);
+        switch (status) {
+            case None:
+            case Previous_WDTW:
+            case Partial_WDTW:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                minDist = distComputer.distance(query.data[0], reference.data[0], weightVector);
+                Application.distCount++;
+                if (minDist > bestMinDist) bestMinDist = minDist;
+                status = LBStatus.Full_WDTW;
+            case Full_WDTW:
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                else return RefineReturnType.New_best;
+            default:
+                throw new RuntimeException("Case not managed");
+        }
+    }
+
     public RefineReturnType tryToBeat(final double scoreToBeat, final double[] weightVector, final double bestSoFar) {
         setCurrentWeightVector(weightVector);
         switch (status) {

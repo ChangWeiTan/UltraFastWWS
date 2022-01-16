@@ -1,12 +1,11 @@
 package classifiers.ultraFastNN;
 
-import application.Application;
-import classifiers.eapNN.EAPWDTW1NN;
+import classifiers.eapNN.EAPTWE1NN;
 import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.AssessNNEAPWDTW;
+import fastWWS.assessNN.AssessNNEAPTWE;
 import results.TrainingClassificationResults;
 
 import java.util.ArrayList;
@@ -17,20 +16,22 @@ import java.util.stream.IntStream;
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
-public class UltraFastWDTW extends EAPWDTW1NN {
-    public UltraFastWDTW() {
+public class UltraFastTWE5 extends EAPTWE1NN {
+    final int ubParam = nParams - 1;
+
+    public UltraFastTWE5() {
         super();
-        this.classifierIdentifier = "UltraFastWDTW";
+        this.classifierIdentifier = "UltraFastTWE5";
     }
 
-    public UltraFastWDTW(final Sequences trainData) {
+    public UltraFastTWE5(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "UltraFastWDTW";
+        this.classifierIdentifier = "UltraFastTWE5";
     }
 
-    public UltraFastWDTW(final int paramId, final Sequences trainData) {
+    public UltraFastTWE5(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "UltraFastWDTW";
+        this.classifierIdentifier = "UltraFastTWE5";
     }
 
     @Override
@@ -55,34 +56,35 @@ public class UltraFastWDTW extends EAPWDTW1NN {
             }
         }
         classCounts = new int[nParams][train.size()][train.getNumClasses()];
-        boolean[] vectorCreated = new boolean[nParams];
-        double[][] weightVectors = new double[nParams][maxWindow];
 
-        final AssessNNEAPWDTW[] lazyAssessNNS = new AssessNNEAPWDTW[train.size()];
+        final AssessNNEAPTWE[] lazyAssessNNS = new AssessNNEAPTWE[train.size()];
         for (int i = 0; i < train.size(); ++i) {
-            lazyAssessNNS[i] = new AssessNNEAPWDTW(cache);
+            lazyAssessNNS[i] = new AssessNNEAPTWE(cache);
         }
-        final ArrayList<AssessNNEAPWDTW> challengers = new ArrayList<>(train.size());
+        final ArrayList<AssessNNEAPTWE> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
             final Sequence sCurrent = train.get(current);
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final AssessNNEAPWDTW d = lazyAssessNNS[previous];
+                final AssessNNEAPTWE d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
 
             // ============================================================
-            // do the largest window (full WDTW) first
+            // do the largest window (full DTW) first
             // get paramid and initialise
-            int paramId = nParams - 1;
+            int paramId = 0;
+            int nextUBParam = 9;
             setParamsFromParamId(paramId);
-            if (!vectorCreated[paramId]) {
-                initWeights(sCurrent.length());
-                weightVectors[paramId] = weightVector;
-                vectorCreated[paramId] = true;
+
+            challengers.clear();
+            for (int previous = 0; previous < current; ++previous) {
+                final AssessNNEAPTWE d = lazyAssessNNS[previous];
+                d.set(train.get(previous), previous, sCurrent, current);
+                challengers.add(d);
             }
 
             // sort existing series by their distances to their NN
@@ -95,27 +97,22 @@ public class UltraFastWDTW extends EAPWDTW1NN {
             CandidateNN currPNN = nnArr[current];
             for (int i = 0; i < sortedIndices.length; i++) {
                 int sortedIdx = sortedIndices[i];
-                AssessNNEAPWDTW challenger = challengers.get(sortedIdx);
+                AssessNNEAPTWE challenger = challengers.get(sortedIdx);
                 final int previous = challenger.indexQuery;
                 final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                 // --- First we want to beat the current best candidate:
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
-                    if (candidateNNS[0][current].distance == Double.POSITIVE_INFINITY) {
-                        challenger.tryEuclidean();
-                        bestSoFar = challenger.euclideanDistance / 2;
-                        candidateNNS[0][current].set(previous, bestSoFar, CandidateNN.Status.BC);
-                    } else {
-                        bestSoFar = candidateNNS[0][current].distance;
-                    }
+                    challenger.getDiagUB();
+                    bestSoFar = challenger.upperBoundDistance;
                 } else {
                     bestSoFar = Math.max(toBeat, prevNN.distance);
                 }
-                AssessNNEAPWDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                AssessNNEAPTWE.RefineReturnType rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                 // --- Check the result
-                if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                     final double d = challenger.getDistance();
                     currPNN.set(previous, d, CandidateNN.Status.BC);
                     if (d < toBeat) {
@@ -130,10 +127,10 @@ public class UltraFastWDTW extends EAPWDTW1NN {
                 // --- Try to beat the previous best NN
                 toBeat = prevNN.distance;
                 challenger = lazyAssessNNS[previous];
-                rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                 // --- Check the result
-                if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                     final double d = challenger.getDistance();
                     prevNN.set(current, d, CandidateNN.Status.NN);
                     if (d < toBeat) {
@@ -159,40 +156,32 @@ public class UltraFastWDTW extends EAPWDTW1NN {
             // remember the NN at w+1
             int nnAtPreviousWindow = 0;
 
-            for (paramId = nParams - 2; paramId > -1; --paramId) {
+            for (paramId = 1; paramId < nParams; paramId++) {
+                if (paramId % 10 == 0) nextUBParam = nextUBParam + 10;
+
                 setParamsFromParamId(paramId);
-                if (!vectorCreated[paramId]) {
-                    initWeights(sCurrent.length());
-                    weightVectors[paramId] = weightVector;
-                    vectorCreated[paramId] = true;
-                }
                 currPNN = candidateNNS[paramId][current];
 
                 if (currPNN.isNN()) {
                     // --- --- WITH NN CASE --- ---
                     // We already have the NN for sure, but we still have to check if current is the new NN for previous
                     for (int i = 0; i < current; ++i) {
-                        final AssessNNEAPWDTW challenger = challengers.get(i);
+                        final AssessNNEAPTWE challenger = challengers.get(i);
                         int previous = challenger.indexQuery;
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[0][previous].distance == Double.POSITIVE_INFINITY) {
-                                challenger.tryEuclidean();
-                                bestSoFar = challenger.euclideanDistance / 2;
-                                candidateNNS[0][previous].set(current, bestSoFar, CandidateNN.Status.BC);
-                            } else {
-                                bestSoFar = candidateNNS[0][previous].distance;
-                            }
+                            challenger.getDiagUB();
+                            bestSoFar = challenger.upperBoundDistance;
                         } else {
                             bestSoFar = toBeat;
                         }
-                        final AssessNNEAPWDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                        final AssessNNEAPTWE.RefineReturnType rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                             d = challenger.getDistance();
                             prevNN.set(current, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
@@ -206,27 +195,22 @@ public class UltraFastWDTW extends EAPWDTW1NN {
                 } else {
                     // --- --- WITHOUT NN CASE --- ---
                     // We don't have the NN yet.
-                    AssessNNEAPWDTW challenger = challengers.get(nnAtPreviousWindow);
+                    AssessNNEAPTWE challenger = challengers.get(nnAtPreviousWindow);
                     int previous = challenger.indexQuery;
                     CandidateNN prevNN = candidateNNS[paramId][previous];
 
                     // --- First we want to beat the current best candidate:
                     double toBeat = currPNN.distance;
                     if (toBeat == Double.POSITIVE_INFINITY) {
-                        if (candidateNNS[0][current].distance == Double.POSITIVE_INFINITY) {
-                            challenger.tryEuclidean();
-                            bestSoFar = challenger.euclideanDistance / 2;
-                            candidateNNS[0][current].set(previous, bestSoFar, CandidateNN.Status.BC);
-                        } else {
-                            bestSoFar = candidateNNS[0][current].distance;
-                        }
+                        challenger.getDiagUB();
+                        bestSoFar = challenger.upperBoundDistance;
                     } else {
                         bestSoFar = Math.max(toBeat, prevNN.distance);
                     }
-                    AssessNNEAPWDTW.RefineReturnType rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                    AssessNNEAPTWE.RefineReturnType rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                     // --- Check the result
-                    if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                    if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                         d = challenger.getDistance();
                         currPNN.set(previous, d, CandidateNN.Status.BC);
                         if (d < toBeat) {
@@ -241,10 +225,10 @@ public class UltraFastWDTW extends EAPWDTW1NN {
                     // --- Try to beat the previous best NN
                     toBeat = prevNN.distance;
                     challenger = lazyAssessNNS[previous];
-                    rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                    rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                     // --- Check the result
-                    if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                    if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                         d = challenger.getDistance();
                         prevNN.set(current, d, CandidateNN.Status.NN);
                         if (d < toBeat) {
@@ -267,20 +251,15 @@ public class UltraFastWDTW extends EAPWDTW1NN {
                         // --- First we want to beat the current best candidate:
                         toBeat = currPNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[0][current].distance == Double.POSITIVE_INFINITY) {
-                                challenger.tryEuclidean();
-                                bestSoFar = challenger.euclideanDistance / 2;
-                                candidateNNS[0][current].set(previous, bestSoFar, CandidateNN.Status.BC);
-                            } else {
-                                bestSoFar = candidateNNS[0][current].distance;
-                            }
+                            challenger.getDiagUB();
+                            bestSoFar = challenger.upperBoundDistance;
                         } else {
                             bestSoFar = Math.max(toBeat, prevNN.distance);
                         }
-                        rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                        rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                             d = challenger.getDistance();
                             currPNN.set(previous, d, CandidateNN.Status.BC);
                             if (d < toBeat) {
@@ -296,10 +275,10 @@ public class UltraFastWDTW extends EAPWDTW1NN {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        rrt = challenger.tryToBeat(toBeat, weightVectors[paramId], bestSoFar);
+                        rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == AssessNNEAPWDTW.RefineReturnType.New_best) {
+                        if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
                             d = challenger.getDistance();
                             prevNN.set(current, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
@@ -321,6 +300,5 @@ public class UltraFastWDTW extends EAPWDTW1NN {
                 }
             }
         }
-        if (Application.verbose > 1) System.out.println("");
     }
 }

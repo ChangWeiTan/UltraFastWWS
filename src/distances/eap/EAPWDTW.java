@@ -17,6 +17,11 @@ import static utils.GenericTools.min3;
  * Code taken from "Early abandoning and pruning for elastic distances"
  */
 public class EAPWDTW extends ElasticDistances {
+    public double distance(double[] lines, double[] cols, double[] weights) {
+        final double ub = upperBoundDistance(lines, cols);
+        return distance(lines, cols, weights, ub);
+    }
+
     public double distance(double[] lines, double[] cols, double[] weights, double cutoff) {
 
         // Ensure that lines are longer than columns
@@ -154,5 +159,16 @@ public class EAPWDTW extends ElasticDistances {
         } else {
             return POSITIVE_INFINITY;
         }
+    }
+
+    public double upperBoundDistance(double[] lines, double[] cols) {
+        final int m = lines.length;
+        double dist = 0;
+
+        for (int i = 0; i < m; i++) {
+            dist += dist(lines[i], cols[i]);
+        }
+
+        return dist / 2;
     }
 }

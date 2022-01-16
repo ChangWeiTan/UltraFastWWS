@@ -16,6 +16,12 @@ import static java.lang.Math.abs;
  * Code taken from "Early abandoning and pruning for elastic distances"
  */
 public class EAPTWE extends ElasticDistances {
+    public double distance(double[] lines, double[] cols, double nu, double lambda) {
+        final double ub = upperBoundDistance(lines, cols);
+        return distance(lines, cols, nu, lambda, ub);
+//        return distance(lines, cols, nu, lambda, POSITIVE_INFINITY);
+    }
+
     public double distance(double[] lines, double[] cols, double nu, double lambda, double cutoff) {
         // Ensure that lines are longer than columns
         if (lines.length < cols.length) {
@@ -198,11 +204,6 @@ public class EAPTWE extends ElasticDistances {
             }
             // --- --- ---
             prev_pp = curr_pp;
-//
-//            for (int ii = 0; ii < buffers.length; ii++) {
-//                System.out.print(buffers[ii] + ",");
-//            }
-//            System.out.println();
         } // End of main loop for(;i<nblines;++i)
 
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
@@ -216,18 +217,25 @@ public class EAPTWE extends ElasticDistances {
         }
     }
 
-    public double upperBoundDistance(double[] lines, double[] cols, double nu, double lambda, double cutoff) {
+    public double upperBoundDistance(double[] lines, double[] cols, double cutoff) {
         final int m = lines.length;
-
-        int i;
-        final double nu2 = nu * 2;
-
         double dist = dist(lines[0], cols[0]);
 
-        for (i = 1; i < m; i++) {
-            dist += dist(lines[i], cols[i]) + dist(lines[i - 1], cols[i - 1]) + nu2;
+        for (int i = 1; i < m; i++) {
+            dist += dist(lines[i], cols[i]) + dist(lines[i - 1], cols[i - 1]);
             //Early abandon
             if (dist >= cutoff) return Double.POSITIVE_INFINITY;
+        }
+
+        return dist;
+    }
+
+    public double upperBoundDistance(double[] lines, double[] cols) {
+        final int m = lines.length;
+        double dist = dist(lines[0], cols[0]);
+
+        for (int i = 1; i < m; i++) {
+            dist += dist(lines[i], cols[i]) + dist(lines[i - 1], cols[i - 1]);
         }
 
         return dist;

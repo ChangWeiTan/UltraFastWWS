@@ -63,6 +63,10 @@ public class AssessNNEAPTWE extends LazyAssessNN {
                 Double.POSITIVE_INFINITY);
     }
 
+    public void getDiagUB() {
+        upperBoundDistance = distComputer.upperBoundDistance(query.data[0], reference.data[0]);
+    }
+
     @Override
     public void getUpperBound(final double scoreToBeat) {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
@@ -93,6 +97,34 @@ public class AssessNNEAPTWE extends LazyAssessNN {
         }
     }
 
+    private void tryContinueLBTWED(final double scoreToBeat) {
+        final int length = query.length();
+        final double q0 = query.value(0);
+        final double c0 = reference.value(0);
+        double diff = q0 - c0;
+        this.minDist = Math.min(diff * diff,
+                Math.min(q0 * q0 + currentNu + currentLambda,
+                        c0 * c0 + currentNu + currentLambda));
+        this.indexStoppedLB = 1;
+        while (indexStoppedLB < length && minDist <= scoreToBeat) {
+            final int index = cache.getIndexNthHighestVal(indexReference, indexStoppedLB);
+            if (index > 0) {
+                final double curr = reference.value(index);
+                final double prev = reference.value(index - 1);
+                final double max = Math.max(cache.getMax(indexQuery), prev);
+                final double min = Math.min(cache.getMin(indexQuery), prev);
+                if (curr < min) {
+                    diff = min - curr;
+                    this.minDist += Math.min(currentNu, diff * diff);
+                } else if (max < curr) {
+                    diff = max - curr;
+                    this.minDist += Math.min(currentNu, diff * diff);
+                }
+            }
+            indexStoppedLB++;
+        }
+    }
+
     public RefineReturnType tryToBeat(final double scoreToBeat, final double nu, final double lambda, final double bestSoFar) {
         setCurrentNuAndLambda(nu, lambda);
         switch (status) {
@@ -108,6 +140,25 @@ public class AssessNNEAPTWE extends LazyAssessNN {
                     Application.eaCount++;
                     return RefineReturnType.Pruned_with_Dist;
                 }
+                Application.distCount++;
+                if (minDist > bestMinDist) bestMinDist = minDist;
+                status = LBStatus.Full_TWE;
+            case Full_TWE:
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                else return RefineReturnType.New_best;
+            default:
+                throw new RuntimeException("Case not managed");
+        }
+    }
+
+    public RefineReturnType tryToBeat(final double scoreToBeat, final double nu, final double lambda) {
+        setCurrentNuAndLambda(nu, lambda);
+        switch (status) {
+            case None:
+            case Previous_TWE:
+            case Partial_TWE:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                minDist = distComputer.distance(query.data[0], reference.data[0], nu, lambda);
                 Application.distCount++;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_TWE;

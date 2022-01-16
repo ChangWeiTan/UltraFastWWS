@@ -20,6 +20,11 @@ public class EAPMSM extends ElasticDistances {
         }
     }
 
+    public double distance(double[] lines, double[] cols, double co) {
+        final double ub = l1(lines, cols);
+        return distance(lines, cols, co, ub);
+    }
+
     public double distance(double[] lines, double[] cols, double co, double cutoff) {
         // Ensure that lines are longer than columns
         if (lines.length < cols.length) {
@@ -199,7 +204,5 @@ public class EAPMSM extends ElasticDistances {
         } else {
             return POSITIVE_INFINITY;
         }
-
     }
-
 }
