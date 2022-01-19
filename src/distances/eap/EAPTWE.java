@@ -1,14 +1,10 @@
 package distances.eap;
 
 import distances.ElasticDistances;
-import results.WarpingPathResults;
 import utils.GenericTools;
-
-import java.util.Arrays;
 
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.min;
-import static java.lang.Integer.max;
 import static java.lang.Math.abs;
 
 /**
@@ -17,7 +13,7 @@ import static java.lang.Math.abs;
  */
 public class EAPTWE extends ElasticDistances {
     public double distance(double[] lines, double[] cols, double nu, double lambda) {
-        final double ub = upperBoundDistance(lines, cols);
+        final double ub = diagonalDistance(lines, cols);
         return distance(lines, cols, nu, lambda, ub);
 //        return distance(lines, cols, nu, lambda, POSITIVE_INFINITY);
     }
@@ -69,11 +65,11 @@ public class EAPTWE extends ElasticDistances {
             double li1 = lines[nblines - 2];
             double co = cols[nbcols - 1];
             double co1 = cols[nbcols - 2];
-            double distli = dist(li1, li);
-            double distco = dist(co1, co);
+            double distli = sqDist(li1, li);
+            double distco = sqDist(co1, co);
             double la = GenericTools.min3(
                     distco + nu_lambda, // "Delete_B": over the columns / Prev
-                    dist(li, co) + nu2 * (nblines - nbcols) + dist(li1, co1), // Match: Diag. Ok: nblines >= nbcols
+                    sqDist(li, co) + nu2 * (nblines - nbcols) + sqDist(li1, co1), // Match: Diag. Ok: nblines >= nbcols
                     distli + nu_lambda // "Delete_A": over the lines / Top
             );
             ub = (cutoff + EPSILON) - la;
@@ -83,13 +79,13 @@ public class EAPTWE extends ElasticDistances {
         // Initialisation of the first line. Deal with the line top border condition.
         {
             // Case [0,0]: special "Match case"
-            cost = dist(lines[0], cols[0]);
+            cost = sqDist(lines[0], cols[0]);
             buffers[c + 0] = cost;
             // Distance for the first column is relative to 0 "by conventions" (from the paper, section 4.2)
-            distcol[0] = dist(0, cols[0]);
+            distcol[0] = sqDist(0, cols[0]);
             // Rest of the line: [i==0, j>=1]: "Delete_B case" (prev). We also initialize 'distcol' here.
             for (j = 1; j < nbcols; ++j) {
-                double d = dist(cols[j - 1], cols[j]);
+                double d = sqDist(cols[j - 1], cols[j]);
                 distcol[j] = d;
                 cost = d + cost + nu_lambda;
                 buffers[c + j] = cost;
@@ -101,7 +97,7 @@ public class EAPTWE extends ElasticDistances {
             }
             // Complete the initialisation of distcol
             for (; j < nbcols; ++j) {
-                double d = dist(cols[j - 1], cols[j]);
+                double d = sqDist(cols[j - 1], cols[j]);
                 distcol[j] = d;
             }
             // Next line.
@@ -117,7 +113,7 @@ public class EAPTWE extends ElasticDistances {
             p = swap;
             double li = lines[i];
             double li1 = lines[i - 1];
-            double distli = dist(li1, li);
+            double distli = sqDist(li1, li);
             int curr_pp = next_start; // Next pruning point init at the start of the line
             j = next_start;
             // --- --- --- Stage 0: Special case for the first column. Can only look up (border on the left)
@@ -134,7 +130,7 @@ public class EAPTWE extends ElasticDistances {
             // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
             for (; j == next_start && j < prev_pp; ++j) {
                 cost = min(
-                        buffers[p + j - 1] + nu2 * abs(i - j) + (dist(li, cols[j]) + dist(li1, cols[j - 1])), // "Match": Diag
+                        buffers[p + j - 1] + nu2 * abs(i - j) + (sqDist(li, cols[j]) + sqDist(li1, cols[j - 1])), // "Match": Diag
                         distli + buffers[p + j] + nu_lambda // "Delete_A" / Top
                 );
                 buffers[c + j] = cost;
@@ -147,7 +143,7 @@ public class EAPTWE extends ElasticDistances {
             // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
             for (; j < prev_pp; ++j) {
                 cost = GenericTools.min3(
-                        buffers[p + j - 1] + nu2 * abs(i - j) + (dist(li, cols[j]) + dist(li1, cols[j - 1])), // "Matc"h: Diag
+                        buffers[p + j - 1] + nu2 * abs(i - j) + (sqDist(li, cols[j]) + sqDist(li1, cols[j - 1])), // "Matc"h: Diag
                         distli + buffers[p + j] + nu_lambda, // "Delete_A": over the lines / Top
                         distcol[j] + cost + nu_lambda // "Delete_B": over the columns / Prev
                 );
@@ -159,7 +155,7 @@ public class EAPTWE extends ElasticDistances {
             // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
             if (j < nbcols) { // If so, two cases.
                 if (j == next_start) { // Case 1: Advancing next start: only diag.
-                    cost = buffers[p + j - 1] + nu2 * abs(i - j) + (dist(li, cols[j]) + dist(li1, cols[j - 1])); // "Match": Diag
+                    cost = buffers[p + j - 1] + nu2 * abs(i - j) + (sqDist(li, cols[j]) + sqDist(li1, cols[j - 1])); // "Match": Diag
                     buffers[c + j] = cost;
                     if (cost <= ub) {
                         curr_pp = j + 1;
@@ -173,7 +169,7 @@ public class EAPTWE extends ElasticDistances {
                     }
                 } else { // Case 2: Not advancing next start: possible path in previous cells: left and diag.
                     cost = min(
-                            buffers[p + j - 1] + nu2 * abs(i - j) + (dist(li, cols[j]) + dist(li1, cols[j - 1])), // "Match": Diag
+                            buffers[p + j - 1] + nu2 * abs(i - j) + (sqDist(li, cols[j]) + sqDist(li1, cols[j - 1])), // "Match": Diag
                             distcol[j] + cost + nu_lambda // "Delete_B": over the columns / Prev
                     );
                     buffers[c + j] = cost;
@@ -217,12 +213,12 @@ public class EAPTWE extends ElasticDistances {
         }
     }
 
-    public double upperBoundDistance(double[] lines, double[] cols, double cutoff) {
+    public double diagonalDistance(double[] lines, double[] cols, double cutoff) {
         final int m = lines.length;
-        double dist = dist(lines[0], cols[0]);
+        double dist = sqDist(lines[0], cols[0]);
 
         for (int i = 1; i < m; i++) {
-            dist += dist(lines[i], cols[i]) + dist(lines[i - 1], cols[i - 1]);
+            dist += sqDist(lines[i], cols[i]) + sqDist(lines[i - 1], cols[i - 1]);
             //Early abandon
             if (dist >= cutoff) return Double.POSITIVE_INFINITY;
         }
@@ -230,12 +226,12 @@ public class EAPTWE extends ElasticDistances {
         return dist;
     }
 
-    public double upperBoundDistance(double[] lines, double[] cols) {
+    public double diagonalDistance(double[] lines, double[] cols) {
         final int m = lines.length;
-        double dist = dist(lines[0], cols[0]);
+        double dist = sqDist(lines[0], cols[0]);
 
         for (int i = 1; i < m; i++) {
-            dist += dist(lines[i], cols[i]) + dist(lines[i - 1], cols[i - 1]);
+            dist += sqDist(lines[i], cols[i]) + sqDist(lines[i - 1], cols[i - 1]);
         }
 
         return dist;

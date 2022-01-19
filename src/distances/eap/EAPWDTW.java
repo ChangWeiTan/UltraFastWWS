@@ -1,16 +1,13 @@
 package distances.eap;
 
 import distances.ElasticDistances;
-import results.WarpingPathResults;
 import utils.GenericTools;
 
 import java.util.Arrays;
 
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.min;
-import static java.lang.Integer.max;
 import static java.lang.Math.abs;
-import static utils.GenericTools.min3;
 
 /**
  * Early Abandon Prune DTW
@@ -18,7 +15,7 @@ import static utils.GenericTools.min3;
  */
 public class EAPWDTW extends ElasticDistances {
     public double distance(double[] lines, double[] cols, double[] weights) {
-        final double ub = upperBoundDistance(lines, cols);
+        final double ub = l2(lines, cols) / 2;
         return distance(lines, cols, weights, ub);
     }
 
@@ -56,7 +53,7 @@ public class EAPWDTW extends ElasticDistances {
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Upper bound: tightened using the last alignment (requires special handling in the code below)
         // Add EPSILON helps dealing with numerical instability
-        double ub = cutoff + EPSILON - dist(lines[nblines - 1], cols[nbcols - 1]) * weights[(nblines - 1) - (nbcols - 1)];
+        double ub = cutoff + EPSILON - sqDist(lines[nblines - 1], cols[nbcols - 1]) * weights[(nblines - 1) - (nbcols - 1)];
 
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Initialisation of the top border: already initialized to +INF.
@@ -81,7 +78,7 @@ public class EAPWDTW extends ElasticDistances {
             }
             // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
             for (; j == next_start && j < prev_pp; ++j) {
-                double d = dist(li, cols[j]) * weights[abs(i - j)];
+                double d = sqDist(li, cols[j]) * weights[abs(i - j)];
                 cost = min(buffers[p + j - 1], buffers[p + j]) + d;
                 buffers[c + j] = cost;
                 if (cost <= ub) {
@@ -93,7 +90,7 @@ public class EAPWDTW extends ElasticDistances {
             // --- --- --- Stage 2: Up to the previous pruning point without advancing
             // next_start: left, diag and top
             for (; j < prev_pp; ++j) {
-                double d = dist(li, cols[j]) * weights[abs(i - j)];
+                double d = sqDist(li, cols[j]) * weights[abs(i - j)];
                 cost = GenericTools.min3(cost, buffers[p + j - 1], buffers[p + j]) + d;
                 buffers[c + j] = cost;
                 if (cost <= ub) {
@@ -102,7 +99,7 @@ public class EAPWDTW extends ElasticDistances {
             }
             // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
             if (j < nbcols) { // If so, two cases.
-                double d = dist(li, cols[j]) * weights[abs(i - j)];
+                double d = sqDist(li, cols[j]) * weights[abs(i - j)];
                 if (j == next_start) { // Case 1: Advancing next start: only diag.
                     cost = buffers[p + j - 1] + d;
                     buffers[c + j] = cost;
@@ -139,7 +136,7 @@ public class EAPWDTW extends ElasticDistances {
             // Go on while we advance the curr_pp; if it did not advance, the rest of the
             // line is guaranteed to be > ub.
             for (; j == curr_pp && j < nbcols; ++j) {
-                double d = dist(li, cols[j]) * weights[abs(i - j)];
+                double d = sqDist(li, cols[j]) * weights[abs(i - j)];
                 cost = cost + d;
                 buffers[c + j] = cost;
                 if (cost <= ub) {
@@ -159,16 +156,5 @@ public class EAPWDTW extends ElasticDistances {
         } else {
             return POSITIVE_INFINITY;
         }
-    }
-
-    public double upperBoundDistance(double[] lines, double[] cols) {
-        final int m = lines.length;
-        double dist = 0;
-
-        for (int i = 0; i < m; i++) {
-            dist += dist(lines[i], cols[i]);
-        }
-
-        return dist / 2;
     }
 }

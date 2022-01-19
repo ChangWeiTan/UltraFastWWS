@@ -5,7 +5,6 @@ import results.WarpingPathResults;
 import utils.GenericTools;
 
 import static java.lang.Double.POSITIVE_INFINITY;
-import static java.lang.Double.min;
 import static java.lang.Integer.max;
 import static java.lang.Math.abs;
 
@@ -16,7 +15,7 @@ import static java.lang.Math.abs;
 public class EAPLCSS extends ElasticDistances {
     /// Check if two numbers are within epsilon (1 = similar, 0 = not similar)
     private boolean sim(double a, double b, double epsilon) {
-        return abs(a - b) < epsilon;
+        return absDist(a, b) < epsilon;
     }
 
     public double distance(double[] lines, double[] cols, double epsilon, int w, double cutoff) {

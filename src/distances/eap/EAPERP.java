@@ -16,6 +16,11 @@ import static java.lang.Math.abs;
  * Code taken from "Early abandoning and pruning for elastic distances"
  */
 public class EAPERP extends ElasticDistances {
+    public double distance(double[] lines, double[] cols, double gValue, int w) {
+        final double ub = l2(lines, cols);
+        return distance(lines, cols, gValue, w, ub);
+    }
+
     public double distance(double[] lines, double[] cols, double gValue, int w, double cutoff) {
 
         // Ensure that lines are longer than columns
@@ -60,9 +65,9 @@ public class EAPERP extends ElasticDistances {
         // First, take the "next float" after "cutoff" to deal with numerical instability.
         // Then, subtract the cost of the last alignment.
         double la = GenericTools.min3(
-                dist(gValue, cols[nbcols - 1]),             // Previous
-                dist(lines[nblines - 1], cols[nbcols - 1]), // Diagonal
-                dist(lines[nblines - 1], gValue)            // Above
+                sqDist(gValue, cols[nbcols - 1]),             // Previous
+                sqDist(lines[nblines - 1], cols[nbcols - 1]), // Diagonal
+                sqDist(lines[nblines - 1], gValue)            // Above
         );
         double ub = cutoff + EPSILON - la;
 
@@ -74,7 +79,7 @@ public class EAPERP extends ElasticDistances {
             // Matrix Border - First line
             int jStop = Integer.min(i + w + 1, nbcols);
             for (j = 0; buffers[c + j - 1] <= ub && j < jStop; ++j) {
-                buffers[c + j] = buffers[c + j - 1] + dist(gValue, cols[j]);
+                buffers[c + j] = buffers[c + j - 1] + sqDist(gValue, cols[j]);
             }
             // Pruning point set to first +INF value (or out of bound)
             prev_pp = j;
@@ -95,7 +100,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 0: Initialise the left border
                 {
                     // We haven't swap yet, so the 'top' cell is still indexed by 'c-1'.
-                    cost = buffers[c - 1] + dist(li, gValue);
+                    cost = buffers[c - 1] + sqDist(li, gValue);
                     if (cost > ub) {
                         break;
                     } else {
@@ -110,9 +115,9 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
                 for (; j < prev_pp; ++j) {
                     cost = GenericTools.min3(
-                            cost + dist(gValue, cols[j]),               // Previous
-                            buffers[p + j - 1] + dist(li, cols[j]),     // Diagonal
-                            buffers[p + j] + dist(li, gValue)           // Above
+                            cost + sqDist(gValue, cols[j]),               // Previous
+                            buffers[p + j - 1] + sqDist(li, cols[j]),     // Diagonal
+                            buffers[p + j] + sqDist(li, gValue)           // Above
                     );
                     buffers[c + j] = cost;
                     if (cost <= ub) {
@@ -122,8 +127,8 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
                 if (j < jStop) { // Possible path in previous cells: left and diag.
                     cost = min(
-                            cost + dist(gValue, cols[j]),               // Previous
-                            buffers[p + j - 1] + dist(li, cols[j])      // Diagonal
+                            cost + sqDist(gValue, cols[j]),               // Previous
+                            buffers[p + j - 1] + sqDist(li, cols[j])      // Diagonal
                     );
                     buffers[c + j] = cost;
                     if (cost <= ub) {
@@ -134,7 +139,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 4: After the previous pruning point: only prev.
                 // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
                 for (; j == curr_pp && j < jStop; ++j) {
-                    cost = cost + dist(gValue, cols[j]);  // Previous
+                    cost = cost + sqDist(gValue, cols[j]);  // Previous
                     buffers[c + j] = cost;
                     if (cost <= ub) {
                         ++curr_pp;
@@ -167,8 +172,8 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
                 for (; j == next_start && j < prev_pp; ++j) {
                     cost = min(
-                            buffers[p + j - 1] + dist(li, cols[j]),     // Diagonal
-                            buffers[p + j] + dist(li, gValue)           // Above
+                            buffers[p + j - 1] + sqDist(li, cols[j]),     // Diagonal
+                            buffers[p + j] + sqDist(li, gValue)           // Above
                     );
                     buffers[c + j] = cost;
                     if (cost <= ub) {
@@ -180,9 +185,9 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
                 for (; j < prev_pp; ++j) {
                     cost = GenericTools.min3(
-                            cost + dist(gValue, cols[j]),               // Previous
-                            buffers[p + j - 1] + dist(li, cols[j]),     // Diagonal
-                            buffers[p + j] + dist(li, gValue)           // Above
+                            cost + sqDist(gValue, cols[j]),               // Previous
+                            buffers[p + j - 1] + sqDist(li, cols[j]),     // Diagonal
+                            buffers[p + j] + sqDist(li, gValue)           // Above
                     );
                     buffers[c + j] = cost;
                     if (cost <= ub) {
@@ -192,7 +197,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
                 if (j < jStop) { // If so, two cases.
                     if (j == next_start) { // Case 1: Advancing next start: only diag.
-                        cost = buffers[p + j - 1] + dist(li, cols[j]);     // Diagonal
+                        cost = buffers[p + j - 1] + sqDist(li, cols[j]);     // Diagonal
                         buffers[c + j] = cost;
                         if (cost <= ub) {
                             curr_pp = j + 1;
@@ -206,8 +211,8 @@ public class EAPERP extends ElasticDistances {
                         }
                     } else { // Case 2: Not advancing next start: possible path in previous cells: left and diag.
                         cost = min(
-                                cost + dist(gValue, cols[j]),               // Previous
-                                buffers[p + j - 1] + dist(li, cols[j])      // Diagonal
+                                cost + sqDist(gValue, cols[j]),               // Previous
+                                buffers[p + j - 1] + sqDist(li, cols[j])      // Diagonal
                         );
                         buffers[c + j] = cost;
                         if (cost <= ub) {
@@ -229,7 +234,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 4: After the previous pruning point: only prev.
                 // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
                 for (; j == curr_pp && j < jStop; ++j) {
-                    cost = cost + dist(gValue, cols[j]);
+                    cost = cost + sqDist(gValue, cols[j]);
                     buffers[c + j] = cost;
                     if (cost <= ub) {
                         ++curr_pp;
@@ -295,9 +300,9 @@ public class EAPERP extends ElasticDistances {
         // First, take the "next float" after "cutoff" to deal with numerical instability.
         // Then, subtract the cost of the last alignment.
         double la = GenericTools.min3(
-                dist(gValue, cols[nbcols - 1]),             // Previous
-                dist(lines[nblines - 1], cols[nbcols - 1]), // Diagonal
-                dist(lines[nblines - 1], gValue)            // Above
+                sqDist(gValue, cols[nbcols - 1]),             // Previous
+                sqDist(lines[nblines - 1], cols[nbcols - 1]), // Diagonal
+                sqDist(lines[nblines - 1], gValue)            // Above
         );
         double ub = cutoff + EPSILON - la;
 
@@ -310,7 +315,7 @@ public class EAPERP extends ElasticDistances {
             // Matrix Border - First line
             int jStop = Integer.min(i + w + 1, nbcols);
             for (j = 0; buffers[c + j - 1] <= ub && j < jStop; ++j) {
-                buffers[c + j] = buffers[c + j - 1] + dist(gValue, cols[j]);
+                buffers[c + j] = buffers[c + j - 1] + sqDist(gValue, cols[j]);
                 buffers_w[c + j] = j;
             }
             // Pruning point set to first +INF value (or out of bound)
@@ -333,7 +338,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 0: Initialise the left border
                 {
                     // We haven't swap yet, so the 'top' cell is still indexed by 'c-1'.
-                    cost = buffers[c - 1] + dist(li, gValue);
+                    cost = buffers[c - 1] + sqDist(li, gValue);
                     if (cost > ub) {
                         break;
                     } else {
@@ -348,9 +353,9 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
                 for (; j < prev_pp; ++j) {
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
-                    final double previous = cost + dist(gValue, cols[j]);
-                    final double diagonal = buffers[p + j - 1] + dist(li, cols[j]);
-                    final double above = buffers[p + j] + dist(li, gValue);
+                    final double previous = cost + sqDist(gValue, cols[j]);
+                    final double diagonal = buffers[p + j - 1] + sqDist(li, cols[j]);
+                    final double above = buffers[p + j] + sqDist(li, gValue);
                     if (diagonal <= previous && diagonal <= above) {
                         // diagonal
                         cost = diagonal;
@@ -365,11 +370,6 @@ public class EAPERP extends ElasticDistances {
                         cost = above;
                         mw = max(dw, buffers_w[p + j]);
                     }
-//                    cost = GenericTools.min3(
-//                            cost + dist(gValue, cols[j]),               // Previous
-//                            buffers[p + j - 1] + dist(li, cols[j]),     // Diagonal
-//                            buffers[p + j] + dist(li, gValue)           // Above
-//                    );
                     buffers[c + j] = cost;
                     buffers_w[c + j] = mw;
                     if (cost <= ub) {
@@ -379,8 +379,8 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
                 if (j < jStop) { // Possible path in previous cells: left and diag.
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
-                    final double previous = cost + dist(gValue, cols[j]);
-                    final double diagonal = buffers[p + j - 1] + dist(li, cols[j]);
+                    final double previous = cost + sqDist(gValue, cols[j]);
+                    final double diagonal = buffers[p + j - 1] + sqDist(li, cols[j]);
 
                     if (previous <= diagonal) {
                         cost = previous;
@@ -389,10 +389,6 @@ public class EAPERP extends ElasticDistances {
                         cost = diagonal;
                         mw = buffers_w[p + j - 1];
                     }
-//                    cost = min(
-//                            cost + dist(gValue, cols[j]),               // Previous
-//                            buffers[p + j - 1] + dist(li, cols[j])      // Diagonal
-//                    );
                     buffers[c + j] = cost;
                     buffers_w[c + j] = mw;
                     if (cost <= ub) {
@@ -403,7 +399,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 4: After the previous pruning point: only prev.
                 // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
                 for (; j == curr_pp && j < jStop; ++j) {
-                    cost = cost + dist(gValue, cols[j]);  // Previous
+                    cost = cost + sqDist(gValue, cols[j]);  // Previous
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
                     mw = max(dw, buffers_w[c + j - 1]); // Assess window when moving horizontally
                     buffers[c + j] = cost;
@@ -442,8 +438,8 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
                 for (; j == next_start && j < prev_pp; ++j) {
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
-                    final double diagonal = buffers[p + j - 1] + dist(li, cols[j]);
-                    final double above = buffers[p + j] + dist(li, gValue);
+                    final double diagonal = buffers[p + j - 1] + sqDist(li, cols[j]);
+                    final double above = buffers[p + j] + sqDist(li, gValue);
                     if (diagonal <= above) {
                         cost = diagonal;
                         mw = buffers_w[p + j - 1];
@@ -451,10 +447,6 @@ public class EAPERP extends ElasticDistances {
                         cost = above;
                         mw = max(dw, buffers_w[p + j]);
                     }
-//                    cost = min(
-//                            buffers[p + j - 1] + dist(li, cols[j]),     // Diagonal
-//                            buffers[p + j] + dist(li, gValue)           // Above
-//                    );
                     buffers[c + j] = cost;
                     buffers_w[c + j] = mw;
                     if (cost <= ub) {
@@ -466,13 +458,13 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
                 for (; j < prev_pp; ++j) {
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
-                    final double previous = cost + dist(gValue, cols[j]);
-                    final double diagonal = buffers[p + j - 1] + dist(li, cols[j]);
-                    final double above = buffers[p + j] + dist(li, gValue);
+                    final double previous = cost + sqDist(gValue, cols[j]);
+                    final double diagonal = buffers[p + j - 1] + sqDist(li, cols[j]);
+                    final double above = buffers[p + j] + sqDist(li, gValue);
                     if (diagonal <= previous && diagonal <= above) {
                         cost = diagonal;
                         mw = buffers_w[p + j - 1];
-                    } else if (previous <= diagonal && previous <= above){
+                    } else if (previous <= diagonal && previous <= above) {
                         cost = previous;
                         mw = max(dw, buffers_w[c + j - 1]);
                     } else {
@@ -480,11 +472,6 @@ public class EAPERP extends ElasticDistances {
                         cost = above;
                         mw = max(dw, buffers_w[p + j]);
                     }
-//                    cost = GenericTools.min3(
-//                            cost + dist(gValue, cols[j]),               // Previous
-//                            buffers[p + j - 1] + dist(li, cols[j]),     // Diagonal
-//                            buffers[p + j] + dist(li, gValue)           // Above
-//                    );
                     buffers[c + j] = cost;
                     buffers_w[c + j] = mw;
                     if (cost <= ub) {
@@ -495,7 +482,7 @@ public class EAPERP extends ElasticDistances {
                 if (j < jStop) { // If so, two cases.
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
                     if (j == next_start) { // Case 1: Advancing next start: only diag.
-                        cost = buffers[p + j - 1] + dist(li, cols[j]);     // Diagonal
+                        cost = buffers[p + j - 1] + sqDist(li, cols[j]);     // Diagonal
                         mw = buffers_w[p + j - 1];
                         buffers[c + j] = cost;
                         buffers_w[c + j] = mw;
@@ -510,8 +497,8 @@ public class EAPERP extends ElasticDistances {
                             }
                         }
                     } else { // Case 2: Not advancing next start: possible path in previous cells: left and diag.
-                        final double previous = cost + dist(gValue, cols[j]);
-                        final double diagonal = buffers[p + j - 1] + dist(li, cols[j]);
+                        final double previous = cost + sqDist(gValue, cols[j]);
+                        final double diagonal = buffers[p + j - 1] + sqDist(li, cols[j]);
                         if (previous <= diagonal) {
                             cost = previous;
                             mw = max(dw, buffers_w[c + j - 1]);
@@ -519,10 +506,6 @@ public class EAPERP extends ElasticDistances {
                             cost = diagonal;
                             mw = buffers_w[p + j - 1];
                         }
-//                        cost = min(
-//                                cost + dist(gValue, cols[j]),               // Previous
-//                                buffers[p + j - 1] + dist(li, cols[j])      // Diagonal
-//                        );
                         buffers[c + j] = cost;
                         buffers_w[c + j] = mw;
                         if (cost <= ub) {
@@ -544,7 +527,7 @@ public class EAPERP extends ElasticDistances {
                 // --- --- --- Stage 4: After the previous pruning point: only prev.
                 // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
                 for (; j == curr_pp && j < jStop; ++j) {
-                    cost = cost + dist(gValue, cols[j]);
+                    cost = cost + sqDist(gValue, cols[j]);
                     buffers[c + j] = cost;
                     int dw = i > j ? i - j : j - i;  // abs(i-j)
                     mw = max(dw, buffers_w[c + j - 1]); // Assess window when moving horizontally

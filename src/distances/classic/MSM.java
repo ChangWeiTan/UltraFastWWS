@@ -11,7 +11,7 @@ public class MSM extends ElasticDistances {
         double d1, d2, d3;
 
         // Initialization
-        matrixD[0][0] = Math.abs(first[0] - second[0]);
+        matrixD[0][0] = absDist(first[0], second[0]);
         for (i = 1; i < m; i++) {
             matrixD[i][0] = matrixD[i - 1][0] + editCost(first[i], first[i - 1], second[0], c);
         }
@@ -22,7 +22,7 @@ public class MSM extends ElasticDistances {
         // Main Loop
         for (i = 1; i < m; i++) {
             for (j = 1; j < n; j++) {
-                d1 = matrixD[i - 1][j - 1] + Math.abs(first[i] - second[j]);
+                d1 = matrixD[i - 1][j - 1] + absDist(first[i], second[j]);
                 d2 = matrixD[i - 1][j] + editCost(first[i], first[i - 1], second[j], c);
                 d3 = matrixD[i][j - 1] + editCost(second[j], first[i], second[j - 1], c);
                 matrixD[i][j] = Math.min(d1, Math.min(d2, d3));
@@ -41,7 +41,7 @@ public class MSM extends ElasticDistances {
         double min;
 
         // Initialization
-        matrixD[0][0] = Math.abs(first[0] - second[0]);
+        matrixD[0][0] = absDist(first[0], second[0]);
         for (i = 1; i < m; i++) {
             matrixD[i][0] = matrixD[i - 1][0] + editCost(first[i], first[i - 1], second[0], c);
         }
@@ -53,7 +53,7 @@ public class MSM extends ElasticDistances {
         for (i = 1; i < m; i++) {
             min = cutOffValue;
             for (j = 1; j < n; j++) {
-                d1 = matrixD[i - 1][j - 1] + Math.abs(first[i] - second[j]);
+                d1 = matrixD[i - 1][j - 1] + absDist(first[i], second[j]);
                 d2 = matrixD[i - 1][j] + editCost(first[i], first[i - 1], second[j], c);
                 d3 = matrixD[i][j - 1] + editCost(second[j], first[i], second[j - 1], c);
                 matrixD[i][j] = Math.min(d1, Math.min(d2, d3));
@@ -80,7 +80,7 @@ public class MSM extends ElasticDistances {
         if (((x <= new_point) && (new_point <= y)) || ((y <= new_point) && (new_point <= x))) {
             dist = c;
         } else {
-            dist = c + Math.min(Math.abs(new_point - x), Math.abs(new_point - y));
+            dist = c + Math.min(absDist(new_point, x), absDist(new_point, y));
         }
 
         return dist;

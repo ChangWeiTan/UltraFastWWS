@@ -40,14 +40,9 @@ public class ERP extends ElasticDistances {
             for (j = left; j <= right; j++) {
                 absIJ = Math.abs(i - j);
                 if (absIJ <= band) {
-                    diff = first[i] - g;
-                    d1 = (diff * diff);
-
-                    diff = g - second[j];
-                    d2 = (diff * diff);
-
-                    diff = first[i] - second[j];
-                    d12 = (diff * diff);
+                    d1 = sqDist(first[i], g);
+                    d2 = sqDist(second[j], g);
+                    d12 = sqDist(first[i], second[j]);
 
                     if ((i + j) != 0) {
                         if ((i == 0) || ((j != 0) &&
@@ -113,14 +108,9 @@ public class ERP extends ElasticDistances {
             for (j = left; j <= right; j++) {
                 absIJ = Math.abs(i - j);
                 if (absIJ <= band) {
-                    diff = first[i] - g;
-                    d1 = (diff * diff);
-
-                    diff = g - second[j];
-                    d2 = (diff * diff);
-
-                    diff = first[i] - second[j];
-                    d12 = (diff * diff);
+                    d1 = sqDist(first[i], g);
+                    d2 = sqDist(second[j], g);
+                    d12 = sqDist(first[i], second[j]);
 
                     if ((i + j) != 0) {
                         if ((i == 0) || ((j != 0) &&
@@ -137,7 +127,6 @@ public class ERP extends ElasticDistances {
                             // match
                             cost = prev[j - 1] + d12;
                             minWarpingWindow[i][j] = Math.max(absIJ, minWarpingWindow[i - 1][j - 1]);
-//                            minWarpingWindow[i][j] = minWarpingWindow[i - 1][j - 1];
                         }
                     } else {
                         cost = 0;

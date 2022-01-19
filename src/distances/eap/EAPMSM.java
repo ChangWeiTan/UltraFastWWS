@@ -1,11 +1,11 @@
 package distances.eap;
 
+import application.Application;
 import distances.ElasticDistances;
 import utils.GenericTools;
 
 import static java.lang.Double.POSITIVE_INFINITY;
 import static java.lang.Double.min;
-import static java.lang.Math.abs;
 
 /**
  * Early Abandon Prune MSM
@@ -13,10 +13,11 @@ import static java.lang.Math.abs;
  */
 public class EAPMSM extends ElasticDistances {
     private double split_merge_cost(double new_point, double xi, double yj, double c) {
+        Application.pointwiseCount += 2;
         if (((xi <= new_point) && (new_point <= yj)) || ((yj <= new_point) && (new_point <= xi))) {
             return c;
         } else {
-            return c + min(abs(new_point - xi), abs(new_point - yj));
+            return c + min(absDist(new_point, xi), absDist(new_point, yj));
         }
     }
 
@@ -63,10 +64,11 @@ public class EAPMSM extends ElasticDistances {
             double li1 = lines[nblines - 2];
             double cj = cols[nbcols - 1];
             double cj1 = cols[nbcols - 2];
-            double la = GenericTools.min3(abs(li - cj), // Diag: Move
+            double la = GenericTools.min3(absDist(li, cj), // Diag: Move
                     split_merge_cost(cj, li, cj1, co), // Previous: Split/Merge
                     split_merge_cost(li, li1, cj, co) // Above: Split/Merge
             );
+            Application.pointwiseCount++;
             ub = (cutoff + EPSILON) - la;
         }
 
@@ -76,7 +78,8 @@ public class EAPMSM extends ElasticDistances {
             double l0 = lines[0];
             // First cell (0,0) is a special case. Early abandon if above the cut-off point.
             {
-                cost = abs(l0 - cols[0]); // Very first cell
+                Application.pointwiseCount++;
+                cost = absDist(l0, cols[0]); // Very first cell
                 buffers[c + 0] = cost;
                 if (cost <= ub) {
                     prev_pp = 1;
@@ -122,8 +125,9 @@ public class EAPMSM extends ElasticDistances {
             }
             // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
             for (; j == next_start && j < prev_pp; ++j) {
+                Application.pointwiseCount++;
                 double cj = cols[j];
-                cost = min(buffers[p + j - 1] + abs(li - cj), // Diag: Move
+                cost = min(buffers[p + j - 1] + absDist(li, cj), // Diag: Move
                         buffers[p + j] + split_merge_cost(li, li1, cj, co) // Above: Split/Merge
                 );
                 buffers[c + j] = cost;
@@ -135,8 +139,9 @@ public class EAPMSM extends ElasticDistances {
             }
             // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
             for (; j < prev_pp; ++j) {
+                Application.pointwiseCount++;
                 double cj = cols[j];
-                cost = GenericTools.min3(buffers[p + j - 1] + abs(li - cj), // Diag: Move
+                cost = GenericTools.min3(buffers[p + j - 1] + absDist(li, cj), // Diag: Move
                         cost + split_merge_cost(cj, li, cols[j - 1], co), // Previous: Split/Merge
                         buffers[p + j] + split_merge_cost(li, li1, cj, co) // Above: Split/Merge
                 );
@@ -149,7 +154,8 @@ public class EAPMSM extends ElasticDistances {
             if (j < nbcols) { // If so, two cases.
                 double cj = cols[j];
                 if (j == next_start) { // Case 1: Advancing next start: only diag.
-                    cost = buffers[p + j - 1] + abs(li - cj); // Diag: Move
+                    Application.pointwiseCount++;
+                    cost = buffers[p + j - 1] + absDist(li, cj); // Diag: Move
                     buffers[c + j] = cost;
                     if (cost <= ub) {
                         curr_pp = j + 1;
@@ -163,7 +169,8 @@ public class EAPMSM extends ElasticDistances {
                         }
                     }
                 } else { // Case 2: Not advancing next start: possible path in previous cells: left and diag.
-                    cost = min(buffers[p + j - 1] + abs(li - cj), // Diag: Move
+                    Application.pointwiseCount++;
+                    cost = min(buffers[p + j - 1] + absDist(li, cj), // Diag: Move
                             cost + split_merge_cost(cj, li, cols[j - 1], co) // Previous: Split/Merge
                     );
                     buffers[c + j] = cost;

@@ -15,6 +15,16 @@ import static utils.GenericTools.min3;
  * Code taken from "Early abandoning and pruning for elastic distances"
  */
 public class EAPDTW extends ElasticDistances {
+    public double distance(double[] lines, double[] cols) {
+        final double ub = l1(lines, cols);
+        return distance(lines, cols, ub);
+    }
+
+    public double distance(double[] lines, double[] cols, int w) {
+        final double ub = l1(lines, cols);
+        return distance(lines, cols, w, ub);
+    }
+
     public double distance(double[] lines, double[] cols, double cutoff) {
         // Ensure that lines are longer than columns
         if (lines.length < cols.length) {
@@ -47,7 +57,7 @@ public class EAPDTW extends ElasticDistances {
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Upper bound: tightened using the last alignment (requires special handling in the code below)
         // Add EPSILON helps dealing with numerical instability
-        double ub = cutoff + EPSILON - dist(lines[nblines - 1], cols[nbcols - 1]);
+        double ub = cutoff + EPSILON - sqDist(lines[nblines - 1], cols[nbcols - 1]);
 
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Initialization of the first line
@@ -55,7 +65,7 @@ public class EAPDTW extends ElasticDistances {
             double l0 = lines[0];
             // Fist cell is a special case.
             // Check against the original upper bound dealing with the case where we have both series of length 1.
-            cost = dist(l0, cols[0]);
+            cost = sqDist(l0, cols[0]);
             if (cost > cutoff) {
                 return POSITIVE_INFINITY;
             }
@@ -64,7 +74,7 @@ public class EAPDTW extends ElasticDistances {
             // last alignment is taken are just above (1==nblines==nbcols, and we have nblines >= nbcols).
             int curr_pp = 1;
             for (j = 1; j == curr_pp && j < nbcols; ++j) {
-                cost = cost + dist(l0, cols[j]);
+                cost = cost + sqDist(l0, cols[j]);
                 buffers[c + j] = cost;
                 if (cost <= ub) {
                     ++curr_pp;
@@ -87,7 +97,7 @@ public class EAPDTW extends ElasticDistances {
             j = next_start;
             // --- --- --- Stage 0: Special case for the first column. Can only look up (border on the left)
             {
-                cost = buffers[p + j] + dist(li, cols[j]);
+                cost = buffers[p + j] + sqDist(li, cols[j]);
                 buffers[c + j] = cost;
                 if (cost <= ub) {
                     curr_pp = j + 1;
@@ -98,7 +108,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
             for (; j == next_start && j < prev_pp; ++j) {
-                cost = min(buffers[p + j - 1], buffers[p + j]) + dist(li, cols[j]);
+                cost = min(buffers[p + j - 1], buffers[p + j]) + sqDist(li, cols[j]);
                 buffers[c + j] = cost;
                 if (cost <= ub) {
                     curr_pp = j + 1;
@@ -108,7 +118,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
             for (; j < prev_pp; ++j) {
-                cost = min3(cost, buffers[p + j - 1], buffers[p + j]) + dist(li, cols[j]);
+                cost = min3(cost, buffers[p + j - 1], buffers[p + j]) + sqDist(li, cols[j]);
                 buffers[c + j] = cost;
                 if (cost <= ub) {
                     curr_pp = j + 1;
@@ -117,7 +127,7 @@ public class EAPDTW extends ElasticDistances {
             // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
             if (j < nbcols) { // If so, two cases.
                 if (j == next_start) { // Case 1: Advancing next start: only diag.
-                    cost = buffers[p + j - 1] + dist(li, cols[j]);
+                    cost = buffers[p + j - 1] + sqDist(li, cols[j]);
                     buffers[c + j] = cost;
                     if (cost <= ub) {
                         curr_pp = j + 1;
@@ -130,7 +140,7 @@ public class EAPDTW extends ElasticDistances {
                         }
                     }
                 } else { // Case 2: Not advancing next start: possible path in previous cells: left and diag.
-                    cost = min(cost, buffers[p + j - 1]) + dist(li, cols[j]);
+                    cost = min(cost, buffers[p + j - 1]) + sqDist(li, cols[j]);
                     buffers[c + j] = cost;
                     if (cost <= ub) {
                         curr_pp = j + 1;
@@ -151,7 +161,7 @@ public class EAPDTW extends ElasticDistances {
             // --- --- --- Stage 4: After the previous pruning point: only prev.
             // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
             for (; j == curr_pp && j < nbcols; ++j) {
-                cost = cost + dist(li, cols[j]);
+                cost = cost + sqDist(li, cols[j]);
                 buffers[c + j] = cost;
                 if (cost <= ub) {
                     ++curr_pp;
@@ -213,7 +223,7 @@ public class EAPDTW extends ElasticDistances {
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Upper bound: tightened using the last alignment (requires special handling in the code below)
         // Add EPSILON helps dealing with numerical instability
-        double ub = cutoff + EPSILON - dist(lines[nblines - 1], cols[nbcols - 1]);
+        double ub = cutoff + EPSILON - sqDist(lines[nblines - 1], cols[nbcols - 1]);
 
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Initialization of the top border: already initialized to +INF. Initialise the left corner to 0.
@@ -241,7 +251,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
             for (; j == next_start && j < prev_pp; ++j) {
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 cost = min(buffers[p + j - 1], buffers[p + j]) + d;
                 buffers[c + j] = cost;
                 if (cost <= ub) {
@@ -252,7 +262,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
             for (; j < prev_pp; ++j) {
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 cost = min3(cost,
                         buffers[p + j - 1],
                         buffers[p + j]) + d;
@@ -263,7 +273,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
             if (j < jStop) { // If so, two cases.
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 if (j == next_start) { // Case 1: Advancing next start: only diag.
                     cost = buffers[p + j - 1] + d;
                     buffers[c + j] = cost;
@@ -299,7 +309,7 @@ public class EAPDTW extends ElasticDistances {
             // --- --- --- Stage 4: After the previous pruning point: only prev.
             // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
             for (; j == curr_pp && j < jStop; ++j) {
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 cost = cost + d;
                 buffers[c + j] = cost;
                 if (cost <= ub) {
@@ -364,7 +374,7 @@ public class EAPDTW extends ElasticDistances {
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Upper bound: tightened using the last alignment (requires special handling in the code below)
         // Add EPSILON helps dealing with numerical instability
-        double ub = cutoff + EPSILON - dist(lines[nblines - 1], cols[nbcols - 1]);
+        double ub = cutoff + EPSILON - sqDist(lines[nblines - 1], cols[nbcols - 1]);
 
         // --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- --- ---
         // Initialization of the top border: already initialized to +INF. Initialise the left corner to 0.
@@ -395,7 +405,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 1: Up to the previous pruning point while advancing next_start: diag and top
             for (; j == next_start && j < prev_pp; ++j) {
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 int dw = i > j ? i - j : j - i;  // abs(i-j)
                 if (buffers[p + j - 1] <= buffers[p + j]) {
                     // DIAG
@@ -416,7 +426,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 2: Up to the previous pruning point without advancing next_start: left, diag and top
             for (; j < prev_pp; ++j) {
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 int dw = i > j ? i - j : j - i;  // abs(i-j)
                 if (buffers[p + j - 1] <= cost && buffers[p + j - 1] <= buffers[p + j]) {
                     // DIAG
@@ -441,7 +451,7 @@ public class EAPDTW extends ElasticDistances {
             }
             // --- --- --- Stage 3: At the previous pruning point. Check if we are within bounds.
             if (j < jStop) { // If so, two cases.
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 int dw = i > j ? i - j : j - i;  // abs(i-j)
                 if (j == next_start) { // Case 1: Advancing next start: only diag.
                     // DIAG
@@ -490,7 +500,7 @@ public class EAPDTW extends ElasticDistances {
             // --- --- --- Stage 4: After the previous pruning point: only prev.
             // Go on while we advance the curr_pp; if it did not advance, the rest of the line is guaranteed to be > ub.
             for (; j == curr_pp && j < jStop; ++j) {
-                double d = dist(li, cols[j]);
+                double d = sqDist(li, cols[j]);
                 cost = cost + d;
                 int dw = i > j ? i - j : j - i;  // abs(i-j)
                 mw = max(dw, buffers_w[c + j - 1]); // Assess window when moving horizontally
