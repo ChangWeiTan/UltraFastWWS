@@ -3,6 +3,8 @@ package fastWWS.lazyAssessNN;
 import datasets.Sequence;
 import fastWWS.SequenceStatsCache;
 
+import static distances.ElasticDistances.absDist;
+import static distances.ElasticDistances.sqDist;
 import static java.lang.Math.*;
 
 /**
@@ -87,36 +89,44 @@ public abstract class LazyAssessNN implements Comparable<LazyAssessNN> {
     }
 
     public void tryEuclidean() {
-        while (indexStoppedED < query.length()) {
-            final double diff = query.value(indexStoppedED) - reference.value(indexStoppedED);
-            euclideanDistance += diff * diff;
+        int i;
+        for (i = indexStoppedED; i < query.length(); i++) {
+            euclideanDistance += sqDist(query.value(i), reference.value(i));
             nOperationsED++;
-            indexStoppedED++;
         }
+        indexStoppedED = i;
     }
 
     public void tryEuclidean(final double scoreToBeat) {
-        while (indexStoppedED < query.length() && euclideanDistance <= scoreToBeat) {
-            final double diff = query.value(indexStoppedED) - reference.value(indexStoppedED);
-            euclideanDistance += diff * diff;
+        int i;
+        for (i = indexStoppedED; i < query.length(); i++) {
+            euclideanDistance += sqDist(query.value(i), reference.value(i));
             nOperationsED++;
-            indexStoppedED++;
+            if (euclideanDistance > scoreToBeat) {
+                indexStoppedED = i;
+                return;
+            }
         }
     }
 
     public void tryL1() {
-        while (indexStoppedED < query.length()) {
-            euclideanDistance += Math.abs(query.value(indexStoppedED) - reference.value(indexStoppedED));
+        int i;
+        for (i = indexStoppedED; i < query.length(); i++) {
+            euclideanDistance += absDist(query.value(i), reference.value(i));
             nOperationsED++;
-            indexStoppedED++;
         }
+        indexStoppedED = i;
     }
 
     public void tryL1(final double scoreToBeat) {
-        while (indexStoppedED < query.length() && euclideanDistance <= scoreToBeat) {
-            euclideanDistance += Math.abs(query.value(indexStoppedED) - reference.value(indexStoppedED));
+        int i;
+        for (i = indexStoppedED; i < query.length(); i++) {
+            euclideanDistance += absDist(query.value(i), reference.value(i));
             nOperationsED++;
-            indexStoppedED++;
+            if (euclideanDistance > scoreToBeat) {
+                indexStoppedED = i;
+                return;
+            }
         }
     }
 

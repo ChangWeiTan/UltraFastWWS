@@ -238,7 +238,7 @@ public class ERP1NN extends OneNearestNeighbour {
     protected int getParamIdFromWindow(final int currentParamId, final int w, final int n) {
         double r = 1.0 * w / n;
         int i = currentParamId;
-        while (i >= 0 && bandSizes[i % 10] != r)
+        while (i >= 0 && bandSizes[i % 10] >= r)
             i--;
 
         return i;

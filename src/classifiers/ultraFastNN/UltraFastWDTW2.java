@@ -105,11 +105,6 @@ public class UltraFastWDTW2 extends EAPWDTW1NN {
                 // --- First we want to beat the current best candidate:
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
-//                    challenger.tryEuclidean();
-//                    bestSoFar = challenger.euclideanDistance;
-//                    candidateNNS[ubParam][current].set(previous, 0, bestSoFar, CandidateNN.Status.BC);
-//                    upperBounds[current][previous] = bestSoFar;
-//                    upperBounds[previous][current] = bestSoFar;
                     if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
                         challenger.getUpperBound();
                         bestSoFar = challenger.upperBoundDistance;

@@ -19,7 +19,7 @@ import static utils.GenericTools.doTimeNs;
 public class TestEAP {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=ItalyPowerDemand",
+            "-problem=ECG5000",
             "-paramId=99",
             "-cpu=4",
             "-verbose=1",
@@ -75,7 +75,7 @@ public class TestEAP {
         Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm);
         trainData.summary();
 
-        tweRun(trainData);
+        msmUBRun(trainData);
     }
 
     private static void msmRun(Sequences trainData) {
@@ -148,6 +148,37 @@ public class TestEAP {
             endTime = System.nanoTime();
             System.out.println(", took " + doTimeNs(endTime - startTime));
         }
+    }
+
+    private static void msmUBRun(Sequences trainData) {
+        EAPMSM eapDistComputer = new EAPMSM();
+        double c = msmParams[99];
+
+        System.out.println("Running distance with, c=" + c);
+        long startTime = System.nanoTime();
+        long t;
+        double t1=0, t2=0;
+        for (int i = 0; i < trainData.size(); i++) {
+            for (int j = 0; j < trainData.size(); j++) {
+                if (i == j) continue;
+                t = System.nanoTime();
+                double d = eapDistComputer.l1(trainData.get(i).data[0], trainData.get(j).data[0]);
+                t1 += (System.nanoTime() - t) / 1e9;
+
+                t = System.nanoTime();
+                double d2 = eapDistComputer.distance(trainData.get(i).data[0], trainData.get(j).data[0], c, Double.POSITIVE_INFINITY);
+                t2 += (System.nanoTime() - t) / 1e9;
+
+                if (d != d2) {
+                    System.out.println(i + "," + j + ", d=" + d + ",Eap=" + d2);
+                }
+            }
+        }
+        long endTime = System.nanoTime();
+        System.out.println(", took " + doTimeNs(endTime - startTime));
+
+        System.out.println("t1 " + t1);
+        System.out.println("t2 " + t2);
     }
 
     private static void tweRun(Sequences trainData) {

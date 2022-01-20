@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.IntStream;
 
+import static distances.ElasticDistances.sqDist;
+
 /**
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
@@ -497,8 +499,7 @@ public class UltraFastERP2 extends EAPERP1NN {
     private double getUB(double[] query, double[] reference, double cutoff) {
         double d = 0;
         for (int i = 0; i < query.length; i++) {
-            double diff = query[i] - reference[i];
-            d += diff * diff;
+            d += sqDist(query[i], reference[i]);
             if (d >= cutoff) return cutoff;
         }
         return d;

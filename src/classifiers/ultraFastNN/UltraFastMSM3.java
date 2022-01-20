@@ -1,5 +1,6 @@
 package classifiers.ultraFastNN;
 
+import application.Application;
 import classifiers.eapNN.EAPMSM1NN;
 import datasets.Sequence;
 import datasets.Sequences;
@@ -445,7 +446,9 @@ public class UltraFastMSM3 extends EAPMSM1NN {
     }
 
     private double getUB(double[] query, double[] reference, double cutoff) {
+//        double a = distComputer.l1(query, reference, cutoff);
         double a = distComputer.distance(query, reference, msmParams[ubParam], cutoff);
+        Application.ubCount++;
         if (a >= Double.MAX_VALUE) return cutoff;
         return a;
     }

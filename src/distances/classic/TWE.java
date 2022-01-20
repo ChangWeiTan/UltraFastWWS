@@ -178,16 +178,16 @@ public class TWE extends ElasticDistances {
         final double nu_lambda = nu + lambda;
         final double nu2 = nu * 2;
         // border of the cost matrix initialization
-        D[0][0] = dist(first[0], second[0]);
-        for (i = 1; i < m; i++) D[i][0] = D[i - 1][0] + dist(first[i], first[i - 1]) + nu_lambda;
-        for (j = 1; j < n; j++) D[0][j] = D[0][j - 1] + dist(second[j], second[j - 1]) + nu_lambda;
+        D[0][0] = sqDist(first[0], second[0]);
+        for (i = 1; i < m; i++) D[i][0] = D[i - 1][0] + sqDist(first[i], first[i - 1]) + nu_lambda;
+        for (j = 1; j < n; j++) D[0][j] = D[0][j - 1] + sqDist(second[j], second[j - 1]) + nu_lambda;
 
         for (i = 1; i < m; i++) {
             for (j = 1; j < n; j++) {
                 htrans = Math.abs(i - j);
-                double t = D[i - 1][j] + dist(first[i], first[i - 1]) + nu_lambda;
-                double d = D[i - 1][j - 1] + dist(first[i], second[j]) + dist(first[i - 1], second[j - 1]) + nu2 * htrans;
-                double p = D[i][j - 1] + dist(second[j], second[j - 1]) + nu_lambda;
+                double t = D[i - 1][j] + sqDist(first[i], first[i - 1]) + nu_lambda;
+                double d = D[i - 1][j - 1] + sqDist(first[i], second[j]) + sqDist(first[i - 1], second[j - 1]) + nu2 * htrans;
+                double p = D[i][j - 1] + sqDist(second[j], second[j - 1]) + nu_lambda;
 
                 D[i][j] = GenericTools.min3(t, d, p);
             }
@@ -207,17 +207,17 @@ public class TWE extends ElasticDistances {
         final double nu_lambda = nu + lambda;
         final double nu2 = nu * 2;
 
-        D[0][0] = dist(first[0], second[0]);
-        for (i = 1; i < m; i++) D[i][0] = D[i - 1][0] + dist(first[i], first[i - 1]) + nu_lambda;
-        for (j = 1; j < n; j++) D[0][j] = D[0][j - 1] + dist(second[j], second[j - 1]) + nu_lambda;
+        D[0][0] = sqDist(first[0], second[0]);
+        for (i = 1; i < m; i++) D[i][0] = D[i - 1][0] + sqDist(first[i], first[i - 1]) + nu_lambda;
+        for (j = 1; j < n; j++) D[0][j] = D[0][j - 1] + sqDist(second[j], second[j - 1]) + nu_lambda;
 
         for (i = 1; i < m; i++) {
             tooBig = !(D[i][0] < cutoff);
             for (j = 1; j < n; j++) {
                 htrans = Math.abs(i - j);
-                double t = D[i - 1][j] + dist(first[i], first[i - 1]) + nu_lambda;
-                double d = D[i - 1][j - 1] + dist(first[i], second[j]) + dist(first[i - 1], second[j - 1]) + nu2 * htrans;
-                double p = D[i][j - 1] + dist(second[j], second[j - 1]) + nu_lambda;
+                double t = D[i - 1][j] + sqDist(first[i], first[i - 1]) + nu_lambda;
+                double d = D[i - 1][j - 1] + sqDist(first[i], second[j]) + sqDist(first[i - 1], second[j - 1]) + nu2 * htrans;
+                double p = D[i][j - 1] + sqDist(second[j], second[j - 1]) + nu_lambda;
 
                 D[i][j] = GenericTools.min3(t, d, p);
                 if (tooBig && D[i][j] < cutoff) tooBig = false;

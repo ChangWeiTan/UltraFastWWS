@@ -30,6 +30,7 @@ public class Application {
     public static int numThreads = 0;
     public static int distCount = 0;
     public static int lbCount = 0;
+    public static int ubCount = 0;
     public static int eaCount = 0;
     public static long pointwiseCount = 0;
     public static double scalabilityTrainRatio = 0;
@@ -151,6 +152,10 @@ public class Application {
 
 
             /// TWE distance
+            case "UltraFastTWE7":
+                classifier = new UltraFastTWE7(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastTWE6":
                 classifier = new UltraFastTWE6(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
@@ -231,6 +236,10 @@ public class Application {
                 break;
 
             /// MSM distance
+            case "UltraFastMSM7":
+                classifier = new UltraFastMSM7(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastMSM6":
                 classifier = new UltraFastMSM6(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;

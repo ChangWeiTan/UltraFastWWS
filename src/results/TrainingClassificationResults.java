@@ -55,6 +55,7 @@ public class TrainingClassificationResults {
                     "\n\tnb_correct = " + nbCorrect + "/" + trainSize +
                     "\n\tdist_count = " + Application.distCount +
                     "\n\tlb_count = " + Application.lbCount +
+                    "\n\tub_count = " + Application.ubCount +
                     "\n\tea_count = " + Application.eaCount +
                     "\n\tpointwiseCount = " + Application.pointwiseCount;
 
@@ -68,6 +69,7 @@ public class TrainingClassificationResults {
                 "\n\tnb_correct = " + nbCorrect + "/" + trainSize +
                 "\n\tdist_count = " + Application.distCount +
                 "\n\tlb_count = " + Application.lbCount +
+                "\n\tub_count = " + Application.ubCount +
                 "\n\tea_count = " + Application.eaCount +
                 "\n\tpointwiseCount = " + Application.pointwiseCount;
     }

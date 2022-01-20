@@ -53,18 +53,16 @@ public class AssessNNEAPTWE extends LazyAssessNN {
     @Override
     public void getUpperBound() {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
-                tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
-                Double.POSITIVE_INFINITY);
+                tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1]);
     }
 
     public void getUpperBound(int paramId) {
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0],
-                tweNuParams[paramId / 10], tweLamdaParams[paramId % 10],
-                Double.POSITIVE_INFINITY);
+                tweNuParams[paramId / 10], tweLamdaParams[paramId % 10]);
     }
 
     public void getDiagUB() {
-        upperBoundDistance = distComputer.upperBoundDistance(query.data[0], reference.data[0]);
+        upperBoundDistance = distComputer.diagonalDistance(query.data[0], reference.data[0]);
     }
 
     @Override

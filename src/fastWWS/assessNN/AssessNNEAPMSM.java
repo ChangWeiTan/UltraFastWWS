@@ -75,19 +75,33 @@ public class AssessNNEAPMSM extends LazyAssessNN {
 
     @Override
     public void getUpperBound() {
+//        Application.ubCount++;
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[msmParams.length - 1], Double.POSITIVE_INFINITY);
     }
 
     public void getUpperBound(int paramId) {
+//        Application.ubCount++;
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[paramId], Double.POSITIVE_INFINITY);
+    }
+
+    public void getDiagUB() {
+//        Application.ubCount++;
+        upperBoundDistance = distComputer.l1(query.data[0], reference.data[0]);
+    }
+
+    public void getDiagUB(final double scoreToBeat) {
+//        Application.ubCount++;
+        upperBoundDistance = distComputer.l1(query.data[0], reference.data[0], scoreToBeat);
     }
 
     @Override
     public void getUpperBound(final double scoreToBeat) {
+//        Application.ubCount++;
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[msmParams.length - 1], scoreToBeat);
     }
 
     public void getUpperBound(final double scoreToBeat, int paramId) {
+//        Application.ubCount++;
         upperBoundDistance = distComputer.distance(query.data[0], reference.data[0], msmParams[paramId + 1], scoreToBeat);
     }
 
