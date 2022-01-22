@@ -95,12 +95,79 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
         }
     }
 
+    private void tryContinueLBWDTWQR(final double scoreToBeat) {
+        final int length = query.length();
+        final double QMAX = cache.getMax(indexQuery);
+        final double QMIN = cache.getMin(indexQuery);
+        this.minDist = 0.0;
+        this.indexStoppedLB = 0;
+        while (indexStoppedLB < length && minDist <= scoreToBeat) {
+            final int index = cache.getIndexNthHighestVal(indexReference, indexStoppedLB);
+            final double c = reference.value(index);
+            if (c < QMIN) {
+                final double diff = QMIN - c;
+                minDist += diff * diff * currentWeightVector[0];
+            } else if (QMAX < c) {
+                final double diff = QMAX - c;
+                minDist += diff * diff * currentWeightVector[0];
+            }
+            indexStoppedLB++;
+        }
+    }
+
+    private void tryContinueLBWDTWRQ(final double scoreToBeat) {
+        final int length = reference.length();
+        final double QMAX = cache.getMax(indexReference);
+        final double QMIN = cache.getMin(indexReference);
+        this.minDist = 0.0;
+        this.indexStoppedLB = 0;
+        while (indexStoppedLB < length && minDist <= scoreToBeat) {
+            final int index = cache.getIndexNthHighestVal(indexQuery, indexStoppedLB);
+            final double c = query.value(index);
+            if (c < QMIN) {
+                final double diff = QMIN - c;
+                minDist += diff * diff * currentWeightVector[0];
+            } else if (QMAX < c) {
+                final double diff = QMAX - c;
+                minDist += diff * diff * currentWeightVector[0];
+            }
+            indexStoppedLB++;
+        }
+    }
+
     public RefineReturnType tryToBeat(final double scoreToBeat, final double[] weightVector) {
         setCurrentWeightVector(weightVector);
         switch (status) {
             case None:
             case Previous_WDTW:
             case Partial_WDTW:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                indexStoppedLB = 0;
+                minDist = 0;
+            case Partial_LB_WDTWQR:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                tryContinueLBWDTWQR(scoreToBeat);
+                Application.lbCount++;
+                if (minDist > bestMinDist) bestMinDist = minDist;
+                if (bestMinDist >= scoreToBeat) {
+                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWQR;
+                    else status = LBStatus.Full_LB_WDTWQR;
+                    return RefineReturnType.Pruned_with_LB;
+                } else status = LBStatus.Full_LB_WDTWQR;
+            case Full_LB_WDTWQR:
+                indexStoppedLB = 0;
+                minDist = 0;
+            case Partial_LB_WDTWRQ:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                tryContinueLBWDTWRQ(scoreToBeat);
+                Application.lbCount++;
+                if (minDist > bestMinDist) bestMinDist = minDist;
+                if (bestMinDist >= scoreToBeat) {
+                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWRQ;
+                    else status = LBStatus.Full_LB_WDTWRQ;
+                    return RefineReturnType.Pruned_with_LB;
+                } else status = LBStatus.Full_LB_WDTWRQ;
+            case Full_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector);
                 Application.distCount++;
@@ -120,6 +187,33 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
             case None:
             case Previous_WDTW:
             case Partial_WDTW:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                indexStoppedLB = 0;
+                minDist = 0;
+            case Partial_LB_WDTWQR:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                tryContinueLBWDTWQR(scoreToBeat);
+                Application.lbCount++;
+                if (minDist > bestMinDist) bestMinDist = minDist;
+                if (bestMinDist >= scoreToBeat) {
+                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWQR;
+                    else status = LBStatus.Full_LB_WDTWQR;
+                    return RefineReturnType.Pruned_with_LB;
+                } else status = LBStatus.Full_LB_WDTWQR;
+            case Full_LB_WDTWQR:
+                indexStoppedLB = 0;
+                minDist = 0;
+            case Partial_LB_WDTWRQ:
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+                tryContinueLBWDTWRQ(scoreToBeat);
+                Application.lbCount++;
+                if (minDist > bestMinDist) bestMinDist = minDist;
+                if (bestMinDist >= scoreToBeat) {
+                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_WDTWRQ;
+                    else status = LBStatus.Full_LB_WDTWRQ;
+                    return RefineReturnType.Pruned_with_LB;
+                } else status = LBStatus.Full_LB_WDTWRQ;
+            case Full_LB_WDTWRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 minDist = distComputer.distance(query.data[0], reference.data[0], weightVector, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
@@ -148,8 +242,13 @@ public class AssessNNEAPWDTW extends LazyAssessNN {
         // WDTW
         switch (status) {
             case Full_WDTW:
+            case Full_LB_WDTWQR:
+            case Full_LB_WDTWRQ:
             case Partial_WDTW:
                 return thisD / query.length();
+            case Partial_LB_WDTWQR:
+            case Partial_LB_WDTWRQ:
+                return thisD / indexStoppedLB;
             case Previous_WDTW:
                 return 0.8 * thisD / query.length();
             case None:
