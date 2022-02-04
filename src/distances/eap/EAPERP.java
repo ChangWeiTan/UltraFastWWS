@@ -17,8 +17,9 @@ import static java.lang.Math.abs;
  */
 public class EAPERP extends ElasticDistances {
     public double distance(double[] lines, double[] cols, double gValue, int w) {
-        final double ub = l2(lines, cols);
-        return distance(lines, cols, gValue, w, ub);
+//        final double ub = l2(lines, cols);
+//        return distance(lines, cols, gValue, w, ub);
+        return distance(lines, cols, gValue, w, POSITIVE_INFINITY);
     }
 
     public double distance(double[] lines, double[] cols, double gValue, int w, double cutoff) {

@@ -117,12 +117,46 @@ public class AssessNNEAPMSM extends LazyAssessNN {
         }
     }
 
+    private void tryContinueLBMSM(final double scoreToBeat) {
+        final int length = query.length();
+        final double QMAX = cache.getMax(indexQuery);
+        final double QMIN = cache.getMin(indexQuery);
+        this.minDist = Math.abs(query.value(0) - reference.value(0));
+        this.indexStoppedLB = 0;
+        while (indexStoppedLB < length && minDist < scoreToBeat) {
+            int index = cache.getIndexNthHighestVal(indexReference, indexStoppedLB);
+            if (index > 0 && index < length - 1) {
+                final double curr = reference.value(index);
+                final double prev = reference.value(index - 1);
+                if (prev <= curr && curr < QMIN) {
+                    minDist += Math.min(Math.abs(reference.value(index) - QMIN), this.currentC);
+                } else if (prev >= curr && curr >= QMAX) {
+                    minDist += Math.min(Math.abs(reference.value(index) - QMAX), this.currentC);
+                }
+            }
+            indexStoppedLB++;
+        }
+    }
+
     public RefineReturnType tryToBeat(final double scoreToBeat, final double c, final double bestSoFar) {
         setCurrentC(c);
         switch (status) {
             case None:
             case Previous_MSM:
             case Partial_MSM:
+//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+//                indexStoppedLB = 0;
+//                minDist = 0;
+//            case Partial_LB_MSM:
+//                tryContinueLBMSM(scoreToBeat);
+//                Application.lbCount++;
+//                if (minDist > bestMinDist) bestMinDist = minDist;
+//                if (bestMinDist >= scoreToBeat) {
+//                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_MSM;
+//                    else status = LBStatus.Full_LB_MSM;
+//                    return RefineReturnType.Pruned_with_LB;
+//                } else status = LBStatus.Full_LB_MSM;
+//            case Full_LB_MSM:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], currentC, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
@@ -149,6 +183,19 @@ public class AssessNNEAPMSM extends LazyAssessNN {
             case None:
             case Previous_MSM:
             case Partial_MSM:
+//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+//                indexStoppedLB = 0;
+//                minDist = 0;
+//            case Partial_LB_MSM:
+//                tryContinueLBMSM(scoreToBeat);
+//                Application.lbCount++;
+//                if (minDist > bestMinDist) bestMinDist = minDist;
+//                if (bestMinDist >= scoreToBeat) {
+//                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_MSM;
+//                    else status = LBStatus.Full_LB_MSM;
+//                    return RefineReturnType.Pruned_with_LB;
+//                } else status = LBStatus.Full_LB_MSM;
+//            case Full_LB_MSM:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], currentC);
                 if (minDist > bestMinDist) bestMinDist = minDist;
@@ -169,8 +216,11 @@ public class AssessNNEAPMSM extends LazyAssessNN {
         switch (status) {
             // MSM
             case Full_MSM:
+            case Full_LB_MSM:
             case Partial_MSM:
                 return thisD / query.length();
+            case Partial_LB_MSM:
+                return thisD / indexStoppedLB;
             case Previous_MSM:
                 return 0.8 * thisD / query.length();
             case None:

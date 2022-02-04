@@ -8,6 +8,7 @@ import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
 import fastWWS.assessNN.AssessNNEAPERP;
 import results.TrainingClassificationResults;
+import utils.EfficientSymmetricMatrix;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,22 +20,22 @@ import static distances.ElasticDistances.sqDist;
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
-public class UltraFastERP2 extends EAPERP1NN {
+public class UltraFastERPGlobal extends EAPERP1NN {
     final int ubParam = 0;
 
-    public UltraFastERP2() {
+    public UltraFastERPGlobal() {
         super();
-        this.classifierIdentifier = "UltraFastERP2";
+        this.classifierIdentifier = "UltraFastERP3";
     }
 
-    public UltraFastERP2(final Sequences trainData) {
+    public UltraFastERPGlobal(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "UltraFastERP2";
+        this.classifierIdentifier = "UltraFastERP3";
     }
 
-    public UltraFastERP2(final int paramId, final Sequences trainData) {
+    public UltraFastERPGlobal(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "UltraFastERP2";
+        this.classifierIdentifier = "UltraFastERP3";
     }
 
     @Override
@@ -51,7 +52,7 @@ public class UltraFastERP2 extends EAPERP1NN {
 
         // initialise
         double bestSoFar;
-        double[][] upperBounds = new double[train.size()][train.size()];
+        EfficientSymmetricMatrix upperBounds = new EfficientSymmetricMatrix(train.size());
 
         candidateNNS = new CandidateNN[nParams][train.size()];
         for (int paramId = 0; paramId < nParams; ++paramId) {
@@ -114,42 +115,43 @@ public class UltraFastERP2 extends EAPERP1NN {
                         bestSoFar = challenger.upperBoundDistance;
                         for (int ii = ubParam; ii < nParams; ii += 10)
                             candidateNNS[ii][current].set(previous, bestSoFar, CandidateNN.Status.BC);
-                        upperBounds[current][previous] = bestSoFar;
-                        upperBounds[previous][current] = bestSoFar;
+                        upperBounds.put(current, previous, bestSoFar);
                     } else {
                         bestSoFar = candidateNNS[ubParam][current].distance;
                     }
                 } else {
-                    if (upperBounds[current][currPNN.nnIndex] == 0) {
-                        upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
-                        upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                    double a = upperBounds.get(current, currPNN.nnIndex);
+                    if (a == 0) {
+                        if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                            upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                        else
+                            upperBounds.put(current, currPNN.nnIndex,
+                                    getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                            candidateNNS[ubParam][current].distance));
                         // update NNS
-                        if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
+                        a = upperBounds.get(current, currPNN.nnIndex);
+                        if (a < candidateNNS[ubParam][current].distance)
                             for (int ii = ubParam; ii < nParams; ii += 10)
-                                candidateNNS[ii][current].set(
-                                        currPNN.nnIndex,
-                                        upperBounds[current][currPNN.nnIndex],
-                                        CandidateNN.Status.BC
-                                );
-                        }
+                                candidateNNS[ii][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                     }
                     if (prevNN.nnIndex >= 0) {
-                        if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                            upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
-                            upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                        double b = upperBounds.get(previous, prevNN.nnIndex);
+                        if (b == 0) {
+                            if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                            else
+                                upperBounds.put(previous, prevNN.nnIndex,
+                                        getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                candidateNNS[ubParam][previous].distance));
+                            b = upperBounds.get(previous, prevNN.nnIndex);
                             // update NNS
-                            if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
+                            if (b < candidateNNS[ubParam][previous].distance)
                                 for (int ii = ubParam; ii < nParams; ii += 10)
-                                    candidateNNS[ii][previous].set(
-                                            prevNN.nnIndex,
-                                            upperBounds[previous][prevNN.nnIndex],
-                                            CandidateNN.Status.BC
-                                    );
-                            }
+                                    candidateNNS[ii][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                         }
-                        bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                        bestSoFar = Math.max(a, b);
                     } else {
-                        bestSoFar = upperBounds[current][currPNN.nnIndex];
+                        bestSoFar = a;
                     }
                 }
                 AssessNNEAPERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, g, bandSize, bestSoFar);
@@ -210,8 +212,8 @@ public class UltraFastERP2 extends EAPERP1NN {
             int w = ERP.getWindowSize(train.length(), bandSize);
             int tmp = paramId;
             while (tmp > 0 && prevG == g && w >= r) {
-                candidateNNS[paramId][current].set(index, r, d, CandidateNN.Status.NN);
-                classCounts[paramId][current] = classCounts[paramId][current].clone();
+                candidateNNS[tmp][current].set(index, r, d, CandidateNN.Status.NN);
+                classCounts[tmp][current] = classCounts[paramId][current].clone();
                 tmp--;
                 this.setParamsFromParamId(tmp);
                 w = ERP.getWindowSize(train.length(), bandSize);
@@ -222,7 +224,7 @@ public class UltraFastERP2 extends EAPERP1NN {
 
             // remember the NN at w+1
             int nnAtPreviousWindow = 0;
-            for (paramId = nParams - 2; paramId > -1; paramId--) {
+            for (paramId = maxWindowValidity - 1; paramId > -1; paramId--) {
                 setParamsFromParamId(paramId);
                 band = this.window;
                 currPNN = candidateNNS[paramId][current];
@@ -243,42 +245,43 @@ public class UltraFastERP2 extends EAPERP1NN {
                                 bestSoFar = challenger.upperBoundDistance;
                                 for (int ii = ubParam; ii < nParams; ii += 10)
                                     candidateNNS[ii][previous].set(current, bestSoFar, CandidateNN.Status.BC);
-                                upperBounds[current][previous] = bestSoFar;
-                                upperBounds[previous][current] = bestSoFar;
+                                upperBounds.put(current, previous, bestSoFar);
                             } else {
                                 bestSoFar = candidateNNS[ubParam][current].distance;
                             }
                         } else {
-                            if (upperBounds[current][currPNN.nnIndex] == 0) {
-                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
-                                upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                            double a = upperBounds.get(current, currPNN.nnIndex);
+                            if (a == 0) {
+                                if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                                    upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                                else
+                                    upperBounds.put(current, currPNN.nnIndex,
+                                            getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                                    candidateNNS[ubParam][current].distance));
                                 // update NNS
-                                if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
+                                a = upperBounds.get(current, currPNN.nnIndex);
+                                if (a < candidateNNS[ubParam][current].distance)
                                     for (int ii = ubParam; ii < nParams; ii += 10)
-                                        candidateNNS[ii][current].set(
-                                                currPNN.nnIndex,
-                                                upperBounds[current][currPNN.nnIndex],
-                                                CandidateNN.Status.BC
-                                        );
-                                }
+                                        candidateNNS[ii][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                             }
                             if (prevNN.nnIndex >= 0) {
-                                if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
-                                    upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                                double b = upperBounds.get(previous, prevNN.nnIndex);
+                                if (b == 0) {
+                                    if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                        upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                                    else
+                                        upperBounds.put(previous, prevNN.nnIndex,
+                                                getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                        candidateNNS[ubParam][previous].distance));
+                                    b = upperBounds.get(previous, prevNN.nnIndex);
                                     // update NNS
-                                    if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
+                                    if (b < candidateNNS[ubParam][previous].distance)
                                         for (int ii = ubParam; ii < nParams; ii += 10)
-                                            candidateNNS[ii][previous].set(
-                                                    prevNN.nnIndex,
-                                                    upperBounds[previous][prevNN.nnIndex],
-                                                    CandidateNN.Status.BC
-                                            );
-                                    }
+                                            candidateNNS[ii][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                                 }
-                                bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                                bestSoFar = Math.max(a, b);
                             } else {
-                                bestSoFar = upperBounds[current][currPNN.nnIndex];
+                                bestSoFar = a;
                             }
                         }
                         final AssessNNEAPERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, g, bandSize, bestSoFar);
@@ -311,42 +314,43 @@ public class UltraFastERP2 extends EAPERP1NN {
                             bestSoFar = challenger.upperBoundDistance;
                             for (int ii = ubParam; ii < nParams; ii += 10)
                                 candidateNNS[ii][current].set(previous, bestSoFar, CandidateNN.Status.BC);
-                            upperBounds[current][previous] = bestSoFar;
-                            upperBounds[previous][current] = bestSoFar;
+                            upperBounds.put(current, previous, bestSoFar);
                         } else {
                             bestSoFar = candidateNNS[ubParam][current].distance;
                         }
                     } else {
-                        if (upperBounds[current][currPNN.nnIndex] == 0) {
-                            upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
-                            upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                        double a = upperBounds.get(current, currPNN.nnIndex);
+                        if (a == 0) {
+                            if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                                upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                            else
+                                upperBounds.put(current, currPNN.nnIndex,
+                                        getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                                candidateNNS[ubParam][current].distance));
                             // update NNS
-                            if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
+                            a = upperBounds.get(current, currPNN.nnIndex);
+                            if (a < candidateNNS[ubParam][current].distance)
                                 for (int ii = ubParam; ii < nParams; ii += 10)
-                                    candidateNNS[ii][current].set(
-                                            currPNN.nnIndex,
-                                            upperBounds[current][currPNN.nnIndex],
-                                            CandidateNN.Status.BC
-                                    );
-                            }
+                                    candidateNNS[ii][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                         }
                         if (prevNN.nnIndex >= 0) {
-                            if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
-                                upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                            double b = upperBounds.get(previous, prevNN.nnIndex);
+                            if (b == 0) {
+                                if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                    upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                                else
+                                    upperBounds.put(previous, prevNN.nnIndex,
+                                            getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                    candidateNNS[ubParam][previous].distance));
+                                b = upperBounds.get(previous, prevNN.nnIndex);
                                 // update NNS
-                                if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
+                                if (b < candidateNNS[ubParam][previous].distance)
                                     for (int ii = ubParam; ii < nParams; ii += 10)
-                                        candidateNNS[ii][previous].set(
-                                                prevNN.nnIndex,
-                                                upperBounds[previous][prevNN.nnIndex],
-                                                CandidateNN.Status.BC
-                                        );
-                                }
+                                        candidateNNS[ii][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                             }
-                            bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                            bestSoFar = Math.max(a, b);
                         } else {
-                            bestSoFar = upperBounds[current][currPNN.nnIndex];
+                            bestSoFar = a;
                         }
                     }
                     AssessNNEAPERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, g, bandSize, bestSoFar);
@@ -400,42 +404,43 @@ public class UltraFastERP2 extends EAPERP1NN {
                                 bestSoFar = challenger.upperBoundDistance;
                                 for (int ii = ubParam; ii < nParams; ii += 10)
                                     candidateNNS[ii][current].set(previous, bestSoFar, CandidateNN.Status.BC);
-                                upperBounds[current][previous] = bestSoFar;
-                                upperBounds[previous][current] = bestSoFar;
+                                upperBounds.put(current, previous, bestSoFar);
                             } else {
                                 bestSoFar = candidateNNS[ubParam][current].distance;
                             }
                         } else {
-                            if (upperBounds[current][currPNN.nnIndex] == 0) {
-                                upperBounds[current][currPNN.nnIndex] = getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0], candidateNNS[ubParam][current].distance);
-                                upperBounds[currPNN.nnIndex][current] = upperBounds[current][currPNN.nnIndex];
+                            double a = upperBounds.get(current, currPNN.nnIndex);
+                            if (a == 0) {
+                                if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                                    upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                                else
+                                    upperBounds.put(current, currPNN.nnIndex,
+                                            getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                                    candidateNNS[ubParam][current].distance));
                                 // update NNS
-                                if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
+                                a = upperBounds.get(current, currPNN.nnIndex);
+                                if (a < candidateNNS[ubParam][current].distance)
                                     for (int ii = ubParam; ii < nParams; ii += 10)
-                                        candidateNNS[ii][current].set(
-                                                currPNN.nnIndex,
-                                                upperBounds[current][currPNN.nnIndex],
-                                                CandidateNN.Status.BC
-                                        );
-                                }
+                                        candidateNNS[ii][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                             }
                             if (prevNN.nnIndex >= 0) {
-                                if (upperBounds[previous][prevNN.nnIndex] == 0) {
-                                    upperBounds[previous][prevNN.nnIndex] = getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0], candidateNNS[ubParam][previous].distance);
-                                    upperBounds[prevNN.nnIndex][previous] = upperBounds[previous][prevNN.nnIndex];
+                                double b = upperBounds.get(previous, prevNN.nnIndex);
+                                if (b == 0) {
+                                    if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                        upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                                    else
+                                        upperBounds.put(previous, prevNN.nnIndex,
+                                                getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                        candidateNNS[ubParam][previous].distance));
+                                    b = upperBounds.get(previous, prevNN.nnIndex);
                                     // update NNS
-                                    if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
+                                    if (b < candidateNNS[ubParam][previous].distance)
                                         for (int ii = ubParam; ii < nParams; ii += 10)
-                                            candidateNNS[ii][previous].set(
-                                                    prevNN.nnIndex,
-                                                    upperBounds[previous][prevNN.nnIndex],
-                                                    CandidateNN.Status.BC
-                                            );
-                                    }
+                                            candidateNNS[ii][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                                 }
-                                bestSoFar = Math.max(upperBounds[current][currPNN.nnIndex], upperBounds[previous][prevNN.nnIndex]);
+                                bestSoFar = Math.max(a, b);
                             } else {
-                                bestSoFar = upperBounds[current][currPNN.nnIndex];
+                                bestSoFar = a;
                             }
                         }
                         rrt = challenger.tryToBeat(toBeat, g, bandSize, bestSoFar);
@@ -484,8 +489,8 @@ public class UltraFastERP2 extends EAPERP1NN {
                     w = ERP.getWindowSize(train.length(), bandSize);
                     tmp = paramId;
                     while (tmp > 0 && prevG == g && w >= r) {
-                        candidateNNS[paramId][current].set(index, r, d, CandidateNN.Status.NN);
-                        classCounts[paramId][current] = classCounts[paramId][current].clone();
+                        candidateNNS[tmp][current].set(index, r, d, CandidateNN.Status.NN);
+                        classCounts[tmp][current] = classCounts[paramId][current].clone();
                         tmp--;
                         this.setParamsFromParamId(tmp);
                         w = ERP.getWindowSize(train.length(), bandSize);

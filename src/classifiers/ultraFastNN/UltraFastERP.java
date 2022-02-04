@@ -1,7 +1,6 @@
 package classifiers.ultraFastNN;
 
 import classifiers.eapNN.EAPERP1NN;
-import classifiers.eapNN.EAPMSM1NN;
 import datasets.Sequence;
 import datasets.Sequences;
 import distances.classic.ERP;
@@ -176,8 +175,8 @@ public class UltraFastERP extends EAPERP1NN {
             int w = ERP.getWindowSize(train.length(), bandSize);
             int tmp = paramId;
             while (tmp > 0 && prevG == g && w >= r) {
-                candidateNNS[paramId][current].set(index, r, d, CandidateNN.Status.NN);
-                classCounts[paramId][current] = classCounts[paramId][current].clone();
+                candidateNNS[tmp][current].set(index, r, d, CandidateNN.Status.NN);
+                classCounts[tmp][current] = classCounts[paramId][current].clone();
                 tmp--;
                 this.setParamsFromParamId(tmp);
                 w = ERP.getWindowSize(train.length(), bandSize);
@@ -188,7 +187,7 @@ public class UltraFastERP extends EAPERP1NN {
 
             // remember the NN at w+1
             int nnAtPreviousWindow = 0;
-            for (paramId = nParams - 2; paramId > -1; paramId--) {
+            for (paramId = maxWindowValidity - 1; paramId > -1; paramId--) {
                 setParamsFromParamId(paramId);
                 band = this.window;
                 currPNN = candidateNNS[paramId][current];
@@ -204,13 +203,13 @@ public class UltraFastERP extends EAPERP1NN {
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
+                            if (candidateNNS[ubParam][previous].distance == Double.POSITIVE_INFINITY) {
                                 challenger.getUpperBound();
                                 bestSoFar = challenger.upperBoundDistance;
                                 for (int ii = ubParam; ii < nParams; ii += 10)
                                     candidateNNS[ii][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                             } else {
-                                bestSoFar = candidateNNS[ubParam][current].distance;
+                                bestSoFar = candidateNNS[ubParam][previous].distance;
                             }
                         } else {
                             bestSoFar = toBeat;
@@ -354,15 +353,15 @@ public class UltraFastERP extends EAPERP1NN {
                     w = ERP.getWindowSize(train.length(), bandSize);
                     tmp = paramId;
                     while (tmp > 0 && prevG == g && w >= r) {
-                        candidateNNS[paramId][current].set(index, r, d, CandidateNN.Status.NN);
-                        classCounts[paramId][current] = classCounts[paramId][current].clone();
+                        candidateNNS[tmp][current].set(index, r, d, CandidateNN.Status.NN);
+                        classCounts[tmp][current] = classCounts[paramId][current].clone();
                         tmp--;
                         this.setParamsFromParamId(tmp);
                         w = ERP.getWindowSize(train.length(), bandSize);
                     }
-
                 }
             }
         }
     }
 }
+

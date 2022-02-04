@@ -1,5 +1,6 @@
 package classifiers.ultraFastNN;
 
+import application.Application;
 import classifiers.eapNN.EAPMSM1NN;
 import datasets.Sequence;
 import datasets.Sequences;
@@ -7,6 +8,7 @@ import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
 import fastWWS.assessNN.AssessNNEAPMSM;
 import results.TrainingClassificationResults;
+import utils.EfficientSymmetricMatrix;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,20 +18,22 @@ import java.util.stream.IntStream;
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
-public class UltraFastMSM5 extends EAPMSM1NN {
-    public UltraFastMSM5() {
+public class UltraFastMSMGlobal extends EAPMSM1NN {
+    final int ubParam = nParams - 1;
+
+    public UltraFastMSMGlobal() {
         super();
-        this.classifierIdentifier = "UltraFastMSM5";
+        this.classifierIdentifier = "UltraFastMSM3";
     }
 
-    public UltraFastMSM5(final Sequences trainData) {
+    public UltraFastMSMGlobal(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "UltraFastMSM5";
+        this.classifierIdentifier = "UltraFastMSM3";
     }
 
-    public UltraFastMSM5(final int paramId, final Sequences trainData) {
+    public UltraFastMSMGlobal(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "UltraFastMSM5";
+        this.classifierIdentifier = "UltraFastMSM3";
     }
 
     @Override
@@ -46,6 +50,7 @@ public class UltraFastMSM5 extends EAPMSM1NN {
 
         // initialise
         double bestSoFar;
+        EfficientSymmetricMatrix upperBounds = new EfficientSymmetricMatrix(train.size());
 
         candidateNNS = new CandidateNN[nParams][train.size()];
         for (int paramId = 0; paramId < nParams; ++paramId) {
@@ -94,10 +99,46 @@ public class UltraFastMSM5 extends EAPMSM1NN {
                 // --- First we want to beat the current best candidate:
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
-                    challenger.tryL1();
-                    bestSoFar = challenger.euclideanDistance;
+                    if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
+                        challenger.getUpperBound();
+                        bestSoFar = challenger.upperBoundDistance;
+                        candidateNNS[ubParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                        upperBounds.put(current, previous, bestSoFar);
+                    } else {
+                        bestSoFar = candidateNNS[ubParam][current].distance;
+                    }
                 } else {
-                    bestSoFar = Math.max(toBeat, prevNN.distance);
+                    double a = upperBounds.get(current, currPNN.nnIndex);
+                    if (a == 0) {
+                        if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                            upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                        else
+                            upperBounds.put(current, currPNN.nnIndex,
+                                    getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                            candidateNNS[ubParam][current].distance));
+                        // update NNS
+                        a = upperBounds.get(current, currPNN.nnIndex);
+                        if (a < candidateNNS[ubParam][current].distance)
+                            candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
+                    }
+                    if (prevNN.nnIndex >= 0) {
+                        double b = upperBounds.get(previous, prevNN.nnIndex);
+                        if (b == 0) {
+                            if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                            else
+                                upperBounds.put(previous, prevNN.nnIndex,
+                                        getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                candidateNNS[ubParam][previous].distance));
+                            b = upperBounds.get(previous, prevNN.nnIndex);
+                            // update NNS
+                            if (b < candidateNNS[ubParam][previous].distance)
+                                candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
+                        }
+                        bestSoFar = Math.max(a, b);
+                    } else {
+                        bestSoFar = a;
+                    }
                 }
                 AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
@@ -161,10 +202,46 @@ public class UltraFastMSM5 extends EAPMSM1NN {
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            challenger.tryL1();
-                            bestSoFar = challenger.euclideanDistance;
+                            if (candidateNNS[ubParam][previous].distance == Double.POSITIVE_INFINITY) {
+                                challenger.getUpperBound();
+                                bestSoFar = challenger.upperBoundDistance;
+                                candidateNNS[ubParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
+                                upperBounds.put(current, previous, bestSoFar);
+                            } else {
+                                bestSoFar = candidateNNS[ubParam][previous].distance;
+                            }
                         } else {
-                            bestSoFar = toBeat;
+                            double a = upperBounds.get(current, currPNN.nnIndex);
+                            if (a == 0) {
+                                if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                                    upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                                else
+                                    upperBounds.put(current, currPNN.nnIndex,
+                                            getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                                    candidateNNS[ubParam][current].distance));
+                                // update NNS
+                                a = upperBounds.get(current, currPNN.nnIndex);
+                                if (a < candidateNNS[ubParam][current].distance)
+                                    candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
+                            }
+                            if (prevNN.nnIndex >= 0) {
+                                double b = upperBounds.get(previous, prevNN.nnIndex);
+                                if (b == 0) {
+                                    if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                        upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                                    else
+                                        upperBounds.put(previous, prevNN.nnIndex,
+                                                getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                        candidateNNS[ubParam][previous].distance));
+                                    b = upperBounds.get(previous, prevNN.nnIndex);
+                                    // update NNS
+                                    if (b < candidateNNS[ubParam][previous].distance)
+                                        candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
+                                }
+                                bestSoFar = Math.max(a, b);
+                            } else {
+                                bestSoFar = a;
+                            }
                         }
                         final AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
@@ -190,10 +267,46 @@ public class UltraFastMSM5 extends EAPMSM1NN {
                     // --- First we want to beat the current best candidate:
                     double toBeat = currPNN.distance;
                     if (toBeat == Double.POSITIVE_INFINITY) {
-                        challenger.tryL1();
-                        bestSoFar = challenger.euclideanDistance;
+                        if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
+                            challenger.getUpperBound();
+                            bestSoFar = challenger.upperBoundDistance;
+                            candidateNNS[ubParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                            upperBounds.put(current, previous, bestSoFar);
+                        } else {
+                            bestSoFar = candidateNNS[ubParam][current].distance;
+                        }
                     } else {
-                        bestSoFar = Math.max(toBeat, prevNN.distance);
+                        double a = upperBounds.get(current, currPNN.nnIndex);
+                        if (a == 0) {
+                            if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                                upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                            else
+                                upperBounds.put(current, currPNN.nnIndex,
+                                        getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                                candidateNNS[ubParam][current].distance));
+                            // update NNS
+                            a = upperBounds.get(current, currPNN.nnIndex);
+                            if (a < candidateNNS[ubParam][current].distance)
+                                candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
+                        }
+                        if (prevNN.nnIndex >= 0) {
+                            double b = upperBounds.get(previous, prevNN.nnIndex);
+                            if (b == 0) {
+                                if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                    upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                                else
+                                    upperBounds.put(previous, prevNN.nnIndex,
+                                            getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                    candidateNNS[ubParam][previous].distance));
+                                b = upperBounds.get(previous, prevNN.nnIndex);
+                                // update NNS
+                                if (b < candidateNNS[ubParam][previous].distance)
+                                    candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
+                            }
+                            bestSoFar = Math.max(a, b);
+                        } else {
+                            bestSoFar = a;
+                        }
                     }
                     AssessNNEAPMSM.RefineReturnType rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
@@ -239,11 +352,48 @@ public class UltraFastMSM5 extends EAPMSM1NN {
                         // --- First we want to beat the current best candidate:
                         toBeat = currPNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            challenger.tryL1();
-                            bestSoFar = challenger.euclideanDistance;
+                            if (candidateNNS[ubParam][current].distance == Double.POSITIVE_INFINITY) {
+                                challenger.getUpperBound();
+                                bestSoFar = challenger.upperBoundDistance;
+                                candidateNNS[ubParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
+                                upperBounds.put(current, previous, bestSoFar);
+                            } else {
+                                bestSoFar = candidateNNS[ubParam][current].distance;
+                            }
                         } else {
-                            bestSoFar = Math.max(toBeat, prevNN.distance);
+                            double a = upperBounds.get(current, currPNN.nnIndex);
+                            if (a == 0) {
+                                if (currPNN.nnIndex == candidateNNS[ubParam][current].nnIndex)
+                                    upperBounds.put(current, currPNN.nnIndex, candidateNNS[ubParam][current].distance);
+                                else
+                                    upperBounds.put(current, currPNN.nnIndex,
+                                            getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
+                                                    candidateNNS[ubParam][current].distance));
+                                // update NNS
+                                a = upperBounds.get(current, currPNN.nnIndex);
+                                if (a < candidateNNS[ubParam][current].distance)
+                                    candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
+                            }
+                            if (prevNN.nnIndex >= 0) {
+                                double b = upperBounds.get(previous, prevNN.nnIndex);
+                                if (b == 0) {
+                                    if (prevNN.nnIndex == candidateNNS[ubParam][previous].nnIndex)
+                                        upperBounds.put(previous, prevNN.nnIndex, candidateNNS[ubParam][previous].distance);
+                                    else
+                                        upperBounds.put(previous, prevNN.nnIndex,
+                                                getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
+                                                        candidateNNS[ubParam][previous].distance));
+                                    b = upperBounds.get(previous, prevNN.nnIndex);
+                                    // update NNS
+                                    if (b < candidateNNS[ubParam][previous].distance)
+                                        candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
+                                }
+                                bestSoFar = Math.max(a, b);
+                            } else {
+                                bestSoFar = a;
+                            }
                         }
+
                         rrt = challenger.tryToBeat(toBeat, c, bestSoFar);
 
                         // --- Check the result
@@ -282,7 +432,7 @@ public class UltraFastMSM5 extends EAPMSM1NN {
                     // the current best candidate is really the best one, so the NN.
                     // So assign the current NN to all the windows that are valid
                     d = currPNN.distance;
-                    double lastD = candidateNNS[nParams - 1][current].distance;
+                    double lastD = candidateNNS[ubParam][current].distance;
                     index = currPNN.nnIndex;
                     if (d == lastD) {
                         for (int tmp = paramId; tmp < nParams; ++tmp) {
@@ -293,5 +443,13 @@ public class UltraFastMSM5 extends EAPMSM1NN {
                 }
             }
         }
+    }
+
+    private double getUB(double[] query, double[] reference, double cutoff) {
+//        double a = distComputer.l1(query, reference, cutoff);
+        double a = distComputer.distance(query, reference, msmParams[ubParam], cutoff);
+        Application.ubCount++;
+        if (a >= Double.MAX_VALUE) return cutoff;
+        return a;
     }
 }

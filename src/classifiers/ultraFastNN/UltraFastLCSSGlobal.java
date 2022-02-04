@@ -1,11 +1,11 @@
 package classifiers.ultraFastNN;
 
-import classifiers.eapNN.EAPTWE1NN;
+import classifiers.eapNN.EAPLCSS1NN;
 import datasets.Sequence;
 import datasets.Sequences;
 import fastWWS.CandidateNN;
 import fastWWS.SequenceStatsCache;
-import fastWWS.assessNN.AssessNNEAPTWE;
+import fastWWS.assessNN.AssessNNEAPLCSS;
 import results.TrainingClassificationResults;
 import utils.EfficientSymmetricMatrix;
 
@@ -17,20 +17,22 @@ import java.util.stream.IntStream;
  * UltraFastWWSearch
  * "Ultra fast warping window optimization for Dynamic Time Warping"
  */
-public class UltraFastTWE3 extends EAPTWE1NN {
-    public UltraFastTWE3() {
+public class UltraFastLCSSGlobal extends EAPLCSS1NN {
+    final int ubParam = 0;
+
+    public UltraFastLCSSGlobal() {
         super();
-        this.classifierIdentifier = "UltraFastTWE3";
+        this.classifierIdentifier = "UltraFastLCSS3";
     }
 
-    public UltraFastTWE3(final Sequences trainData) {
+    public UltraFastLCSSGlobal(final Sequences trainData) {
         super(trainData);
-        this.classifierIdentifier = "UltraFastTWE3";
+        this.classifierIdentifier = "UltraFastLCSS3";
     }
 
-    public UltraFastTWE3(final int paramId, final Sequences trainData) {
+    public UltraFastLCSSGlobal(final int paramId, final Sequences trainData) {
         super(paramId, trainData);
-        this.classifierIdentifier = "UltraFastTWE3";
+        this.classifierIdentifier = "UltraFastLCSS3";
     }
 
     @Override
@@ -58,18 +60,19 @@ public class UltraFastTWE3 extends EAPTWE1NN {
         }
         classCounts = new int[nParams][train.size()][train.getNumClasses()];
 
-        final AssessNNEAPTWE[] lazyAssessNNS = new AssessNNEAPTWE[train.size()];
+        final AssessNNEAPLCSS[] lazyAssessNNS = new AssessNNEAPLCSS[train.size()];
         for (int i = 0; i < train.size(); ++i) {
-            lazyAssessNNS[i] = new AssessNNEAPTWE(cache);
+            lazyAssessNNS[i] = new AssessNNEAPLCSS(cache);
         }
-        final ArrayList<AssessNNEAPTWE> challengers = new ArrayList<>(train.size());
+        final ArrayList<AssessNNEAPLCSS> challengers = new ArrayList<>(train.size());
 
         for (int current = 1; current < train.size(); ++current) {
+            int maxWindowValidity = 0;
             final Sequence sCurrent = train.get(current);
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final AssessNNEAPTWE d = lazyAssessNNS[previous];
+                final AssessNNEAPLCSS d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
@@ -77,14 +80,14 @@ public class UltraFastTWE3 extends EAPTWE1NN {
             // ============================================================
             // do the largest window (full DTW) first
             // get paramid and initialise
-            int paramId = 0;
-            int nextUBParam = 9;
+            int paramId = nParams - 1;
+            int nextUBParam = paramId - 9;
             int ubCount = 0;
             setParamsFromParamId(paramId);
 
             challengers.clear();
             for (int previous = 0; previous < current; ++previous) {
-                final AssessNNEAPTWE d = lazyAssessNNS[previous];
+                final AssessNNEAPLCSS d = lazyAssessNNS[previous];
                 d.set(train.get(previous), previous, sCurrent, current);
                 challengers.add(d);
             }
@@ -99,23 +102,22 @@ public class UltraFastTWE3 extends EAPTWE1NN {
             CandidateNN currPNN = nnArr[current];
             for (int i = 0; i < sortedIndices.length; i++) {
                 int sortedIdx = sortedIndices[i];
-                AssessNNEAPTWE challenger = challengers.get(sortedIdx);
+                AssessNNEAPLCSS challenger = challengers.get(sortedIdx);
                 final int previous = challenger.indexQuery;
                 final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                 // --- First we want to beat the current best candidate:
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
-                    if (upperBounds.get(current, previous, ubCount) == 0) {
+                    if (upperBounds.get(nextUBParam, current, ubCount) == 0) {
                         challenger.getUpperBound(nextUBParam);
                         bestSoFar = challenger.upperBoundDistance;
                         candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                         upperBounds.put(current, previous, bestSoFar, ubCount);
                     } else {
-                        bestSoFar = upperBounds.get(current, previous, ubCount);
+                        bestSoFar = upperBounds.get(nextUBParam, current, ubCount);
                     }
                 } else {
-//                    bestSoFar = Math.max(toBeat, prevNN.distance);
                     double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                     if (a == 0) {
                         if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -148,12 +150,13 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                         bestSoFar = a;
                     }
                 }
-                AssessNNEAPTWE.RefineReturnType rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                 // --- Check the result
-                if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                    final double d = challenger.getDistance();
-                    currPNN.set(previous, d, CandidateNN.Status.BC);
+                if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                    final int r = challenger.getMinWindowValidityForFullDistance();
+                    final double d = challenger.getDistance(delta);
+                    currPNN.set(previous, r, d, CandidateNN.Status.BC);
                     if (d < toBeat) {
                         classCounts[paramId][current] = new int[train.getNumClasses()];
                         classCounts[paramId][current][challenger.getQuery().classificationLabel]++;
@@ -166,39 +169,58 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                 // --- Try to beat the previous best NN
                 toBeat = prevNN.distance;
                 challenger = lazyAssessNNS[previous];
-                rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                 // --- Check the result
-                if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                    final double d = challenger.getDistance();
-                    prevNN.set(current, d, CandidateNN.Status.NN);
+                if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                    final int r = challenger.getMinWindowValidityForFullDistance();
+                    final double d = challenger.getDistance(delta);
+                    prevNN.set(current, r, d, CandidateNN.Status.NN);
                     if (d < toBeat) {
                         classCounts[paramId][previous] = new int[train.getNumClasses()];
                         classCounts[paramId][previous][challenger.getReference().classificationLabel]++;
                     } else if (d == toBeat) {
                         classCounts[paramId][previous][challenger.getReference().classificationLabel]++;
                     }
+                    final double prevEpsilon = epsilon;
+                    int tmp = paramId;
+                    while (tmp > 0 && prevEpsilon == epsilon && delta >= r) {
+                        candidateNNS[tmp][previous].set(current, r, d, CandidateNN.Status.NN);
+                        classCounts[tmp][previous] = classCounts[paramId][previous].clone();
+                        tmp--;
+                        this.setParamsFromParamId(tmp);
+                    }
+                    this.setParamsFromParamId(paramId);
                 }
+                int winEnd = getParamIdFromWindow(paramId, prevNN.r);
+                maxWindowValidity = Math.max(maxWindowValidity, winEnd);
             }
 
             // --- When we looked at every past sequences,
             // the current best candidate is really the best one, so the NN.
             // So assign the current NN to all the windows that are valid
+            int r = currPNN.r;
             double d = currPNN.distance;
             int index = currPNN.nnIndex;
-            candidateNNS[paramId][current].set(index, d, CandidateNN.Status.NN);
-            classCounts[paramId][current] = classCounts[paramId][current].clone();
+            double prevEpsilon = epsilon;
+            int tmp = paramId;
+            while (tmp > 0 && prevEpsilon == epsilon && delta >= r) {
+                candidateNNS[paramId][current].set(index, r, d, CandidateNN.Status.NN);
+                classCounts[paramId][current] = classCounts[paramId][current].clone();
+                tmp--;
+                this.setParamsFromParamId(tmp);
+            }
 
             // now sort the existing series based on distance at w+1
             Collections.sort(challengers);
 
             // remember the NN at w+1
             int nnAtPreviousWindow = 0;
-
-            for (paramId = 1; paramId < nParams; paramId++) {
+            for (paramId = nParams - 2; paramId > -1; paramId--) {
                 if (paramId % 10 == 0) {
-                    nextUBParam = nextUBParam + 10;
+                    nextUBParam = Math.max(0, nextUBParam - 10);
                     ubCount++;
+                    ubCount = Math.min(nUb - 1, ubCount);
                 }
 
                 setParamsFromParamId(paramId);
@@ -208,23 +230,22 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                     // --- --- WITH NN CASE --- ---
                     // We already have the NN for sure, but we still have to check if current is the new NN for previous
                     for (int i = 0; i < current; ++i) {
-                        final AssessNNEAPTWE challenger = challengers.get(i);
+                        final AssessNNEAPLCSS challenger = challengers.get(i);
                         int previous = challenger.indexQuery;
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (upperBounds.get(current, previous, ubCount) == 0) {
+                            if (upperBounds.get(nextUBParam, current, ubCount) == 0) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                                 upperBounds.put(current, previous, bestSoFar, ubCount);
                             } else {
-                                bestSoFar = upperBounds.get(current, previous, ubCount);
+                                bestSoFar = upperBounds.get(nextUBParam, current, ubCount);
                             }
                         } else {
-//                            bestSoFar = toBeat;
                             double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                             if (a == 0) {
                                 if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -257,12 +278,13 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                                 bestSoFar = a;
                             }
                         }
-                        final AssessNNEAPTWE.RefineReturnType rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                        final AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                            d = challenger.getDistance();
-                            prevNN.set(current, d, CandidateNN.Status.NN);
+                        if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                            r = challenger.getMinWindowValidityForFullDistance();
+                            d = challenger.getDistance(delta);
+                            prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
                                 classCounts[paramId][previous][challenger.getReference().classificationLabel]++;
@@ -274,7 +296,7 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                 } else {
                     // --- --- WITHOUT NN CASE --- ---
                     // We don't have the NN yet.
-                    AssessNNEAPTWE challenger = challengers.get(nnAtPreviousWindow);
+                    AssessNNEAPLCSS challenger = challengers.get(nnAtPreviousWindow);
                     int previous = challenger.indexQuery;
                     CandidateNN prevNN = candidateNNS[paramId][previous];
 
@@ -290,7 +312,6 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                             bestSoFar = upperBounds.get(current, previous, ubCount);
                         }
                     } else {
-//                        bestSoFar = Math.max(toBeat, prevNN.distance);
                         double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                         if (a == 0) {
                             if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -323,12 +344,13 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                             bestSoFar = a;
                         }
                     }
-                    AssessNNEAPTWE.RefineReturnType rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                    AssessNNEAPLCSS.RefineReturnType rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                     // --- Check the result
-                    if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                        d = challenger.getDistance();
-                        currPNN.set(previous, d, CandidateNN.Status.BC);
+                    if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                        r = challenger.getMinWindowValidityForFullDistance();
+                        d = challenger.getDistance(delta);
+                        currPNN.set(previous, r, d, CandidateNN.Status.BC);
                         if (d < toBeat) {
                             classCounts[paramId][current] = new int[train.getNumClasses()];
                             classCounts[paramId][current][challenger.getQuery().classificationLabel]++;
@@ -341,12 +363,13 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                     // --- Try to beat the previous best NN
                     toBeat = prevNN.distance;
                     challenger = lazyAssessNNS[previous];
-                    rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                    rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                     // --- Check the result
-                    if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                        d = challenger.getDistance();
-                        prevNN.set(current, d, CandidateNN.Status.NN);
+                    if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                        r = challenger.getMinWindowValidityForFullDistance();
+                        d = challenger.getDistance(delta);
+                        prevNN.set(current, r, d, CandidateNN.Status.NN);
                         if (d < toBeat) {
                             classCounts[paramId][previous] = new int[train.getNumClasses()];
                             classCounts[paramId][previous][challenger.getReference().classificationLabel]++;
@@ -376,7 +399,6 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                                 bestSoFar = upperBounds.get(current, previous, ubCount);
                             }
                         } else {
-//                            bestSoFar = Math.max(toBeat, prevNN.distance);
                             double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                             if (a == 0) {
                                 if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -409,12 +431,13 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                                 bestSoFar = a;
                             }
                         }
-                        rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                        rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                            d = challenger.getDistance();
-                            currPNN.set(previous, d, CandidateNN.Status.BC);
+                        if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                            r = challenger.getMinWindowValidityForFullDistance();
+                            d = challenger.getDistance(delta);
+                            currPNN.set(previous, r, d, CandidateNN.Status.BC);
                             if (d < toBeat) {
                                 nnAtPreviousWindow = i;
                                 classCounts[paramId][current] = new int[train.getNumClasses()];
@@ -428,12 +451,13 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        rrt = challenger.tryToBeat(toBeat, nu, lambda, bestSoFar);
+                        rrt = challenger.tryToBeat(toBeat, delta, epsilon, bestSoFar);
 
                         // --- Check the result
-                        if (rrt == AssessNNEAPTWE.RefineReturnType.New_best) {
-                            d = challenger.getDistance();
-                            prevNN.set(current, d, CandidateNN.Status.NN);
+                        if (rrt == AssessNNEAPLCSS.RefineReturnType.New_best) {
+                            r = challenger.getMinWindowValidityForFullDistance();
+                            d = challenger.getDistance(delta);
+                            prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
                                 classCounts[paramId][previous][challenger.getReference().classificationLabel]++;
@@ -446,10 +470,17 @@ public class UltraFastTWE3 extends EAPTWE1NN {
                     // --- When we looked at every past sequences,
                     // the current best candidate is really the best one, so the NN.
                     // So assign the current NN to all the windows that are valid
+                    r = currPNN.r;
                     d = currPNN.distance;
                     index = currPNN.nnIndex;
-                    candidateNNS[paramId][current].set(index, d, CandidateNN.Status.NN);
-                    classCounts[paramId][current] = classCounts[paramId][current].clone();
+                    prevEpsilon = epsilon;
+                    tmp = paramId;
+                    while (tmp > 0 && prevEpsilon == epsilon && delta >= r) {
+                        candidateNNS[paramId][current].set(index, r, d, CandidateNN.Status.NN);
+                        classCounts[paramId][current] = classCounts[paramId][current].clone();
+                        tmp--;
+                        this.setParamsFromParamId(tmp);
+                    }
                 }
             }
         }
@@ -457,23 +488,17 @@ public class UltraFastTWE3 extends EAPTWE1NN {
 
     private double getUB(double[] query, double[] reference, double cutoff) {
         double a = distComputer.distance(query, reference,
-                tweNuParams[tweNuParams.length - 1], tweLamdaParams[tweLamdaParams.length - 1],
+                epsilons[epsilons.length - 1], deltas[0],
                 cutoff);
         if (a >= Double.MAX_VALUE) return cutoff;
         return a;
     }
 
     private double getUB(double[] query, double[] reference, double cutoff, int paramId) {
-        double a;
-        if (cutoff > Double.MAX_VALUE)
-            a = distComputer.distance(query, reference,
-                    tweNuParams[paramId / 10], tweLamdaParams[paramId % 10]);
-        else {
-            a = distComputer.distance(query, reference,
-                    tweNuParams[paramId / 10], tweLamdaParams[paramId % 10],
-                    cutoff);
-            if (a >= Double.MAX_VALUE) return cutoff;
-        }
+        double a = distComputer.distance(query, reference,
+                epsilons[paramId / 10], deltas[paramId % 10],
+                cutoff);
+        if (a >= Double.MAX_VALUE) return cutoff;
         return a;
     }
 }

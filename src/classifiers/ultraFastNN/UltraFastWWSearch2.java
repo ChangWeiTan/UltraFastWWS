@@ -115,7 +115,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                         // update NNS
                         if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
                             candidateNNS[ubParam][current].set(
-                                    currPNN.nnIndex, 0,
+                                    currPNN.nnIndex,
                                     upperBounds[current][currPNN.nnIndex],
                                     CandidateNN.Status.BC
                             );
@@ -128,7 +128,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                             // update NNS
                             if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
                                 candidateNNS[ubParam][previous].set(
-                                        prevNN.nnIndex, 0,
+                                        prevNN.nnIndex,
                                         upperBounds[previous][prevNN.nnIndex],
                                         CandidateNN.Status.BC
                                 );
@@ -232,7 +232,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                                 // update NNS
                                 if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
                                     candidateNNS[ubParam][current].set(
-                                            currPNN.nnIndex, 0,
+                                            currPNN.nnIndex,
                                             upperBounds[current][currPNN.nnIndex],
                                             CandidateNN.Status.BC
                                     );
@@ -245,7 +245,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                                     // update NNS
                                     if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
                                         candidateNNS[ubParam][previous].set(
-                                                prevNN.nnIndex, 0,
+                                                prevNN.nnIndex,
                                                 upperBounds[previous][prevNN.nnIndex],
                                                 CandidateNN.Status.BC
                                         );
@@ -297,7 +297,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                             // update NNS
                             if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
                                 candidateNNS[ubParam][current].set(
-                                        currPNN.nnIndex, 0,
+                                        currPNN.nnIndex,
                                         upperBounds[current][currPNN.nnIndex],
                                         CandidateNN.Status.BC
                                 );
@@ -310,7 +310,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                                 // update NNS
                                 if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
                                     candidateNNS[ubParam][previous].set(
-                                            prevNN.nnIndex, 0,
+                                            prevNN.nnIndex,
                                             upperBounds[previous][prevNN.nnIndex],
                                             CandidateNN.Status.BC
                                     );
@@ -383,7 +383,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                                 // update NNS
                                 if (upperBounds[current][currPNN.nnIndex] < candidateNNS[ubParam][current].distance) {
                                     candidateNNS[ubParam][current].set(
-                                            currPNN.nnIndex, 0,
+                                            currPNN.nnIndex,
                                             upperBounds[current][currPNN.nnIndex],
                                             CandidateNN.Status.BC
                                     );
@@ -396,7 +396,7 @@ public class UltraFastWWSearch2 extends EAPDTW1NNLbKeogh {
                                     // update NNS
                                     if (upperBounds[previous][prevNN.nnIndex] < candidateNNS[ubParam][previous].distance) {
                                         candidateNNS[ubParam][previous].set(
-                                                prevNN.nnIndex, 0,
+                                                prevNN.nnIndex,
                                                 upperBounds[previous][prevNN.nnIndex],
                                                 CandidateNN.Status.BC
                                         );

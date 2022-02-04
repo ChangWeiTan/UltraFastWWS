@@ -166,12 +166,12 @@ public class UltraFastMSM extends EAPMSM1NN {
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[nParams - 1][current].distance == Double.POSITIVE_INFINITY) {
+                            if (candidateNNS[nParams - 1][previous].distance == Double.POSITIVE_INFINITY) {
                                 challenger.getUpperBound();
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nParams - 1][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                             } else {
-                                bestSoFar = candidateNNS[nParams - 1][current].distance;
+                                bestSoFar = candidateNNS[nParams - 1][previous].distance;
                             }
                         } else {
                             bestSoFar = toBeat;

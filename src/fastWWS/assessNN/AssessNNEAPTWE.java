@@ -127,8 +127,23 @@ public class AssessNNEAPTWE extends LazyAssessNN {
         setCurrentNuAndLambda(nu, lambda);
         switch (status) {
             case None:
+            case Previous_LB_TWE:
             case Previous_TWE:
             case Partial_TWE:
+//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+//                indexStoppedLB = 0;
+//                minDist = 0;
+//            case Partial_LB_TWE:
+//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+//                tryContinueLBTWED(scoreToBeat);
+//                Application.lbCount++;
+//                if (minDist > bestMinDist) bestMinDist = minDist;
+//                if (bestMinDist >= scoreToBeat) {
+//                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_TWE;
+//                    else status = LBStatus.Full_LB_TWE;
+//                    return RefineReturnType.Pruned_with_LB;
+//                } else status = LBStatus.Full_LB_TWE;
+//            case Full_LB_TWE:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], nu, lambda, bestSoFar);
                 if (minDist >= Double.MAX_VALUE) {
@@ -153,8 +168,23 @@ public class AssessNNEAPTWE extends LazyAssessNN {
         setCurrentNuAndLambda(nu, lambda);
         switch (status) {
             case None:
+            case Previous_LB_TWE:
             case Previous_TWE:
             case Partial_TWE:
+//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+//                indexStoppedLB = 0;
+//                minDist = 0;
+//            case Partial_LB_TWE:
+//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
+//                tryContinueLBTWED(scoreToBeat);
+//                Application.lbCount++;
+//                if (minDist > bestMinDist) bestMinDist = minDist;
+//                if (bestMinDist >= scoreToBeat) {
+//                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_TWE;
+//                    else status = LBStatus.Full_LB_TWE;
+//                    return RefineReturnType.Pruned_with_LB;
+//                } else status = LBStatus.Full_LB_TWE;
+//            case Full_LB_TWE:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 minDist = distComputer.distance(query.data[0], reference.data[0], nu, lambda);
                 Application.distCount++;

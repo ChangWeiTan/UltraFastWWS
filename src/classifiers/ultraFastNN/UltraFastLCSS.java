@@ -107,7 +107,7 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                 double toBeat = currPNN.distance;
                 if (toBeat == Double.POSITIVE_INFINITY) {
                     if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
-                        challenger.getUpperBound();
+                        challenger.getUpperBound(nextUBParam, epsilons, deltas);
                         bestSoFar = challenger.upperBoundDistance;
                         candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                     } else {
@@ -199,12 +199,12 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
-                            if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
-                                challenger.getUpperBound();
+                            if (candidateNNS[nextUBParam][previous].distance == Double.POSITIVE_INFINITY) {
+                                challenger.getUpperBound(nextUBParam, epsilons, deltas);
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                             } else {
-                                bestSoFar = candidateNNS[nextUBParam][current].distance;
+                                bestSoFar = candidateNNS[nextUBParam][previous].distance;
                             }
                         } else {
                             bestSoFar = toBeat;
@@ -235,7 +235,7 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                     double toBeat = currPNN.distance;
                     if (toBeat == Double.POSITIVE_INFINITY) {
                         if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
-                            challenger.getUpperBound();
+                            challenger.getUpperBound(nextUBParam, epsilons, deltas);
                             bestSoFar = challenger.upperBoundDistance;
                             candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                         } else {
@@ -291,7 +291,7 @@ public class UltraFastLCSS extends EAPLCSS1NN {
                         toBeat = currPNN.distance;
                         if (toBeat == Double.POSITIVE_INFINITY) {
                             if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
-                                challenger.getUpperBound();
+                                challenger.getUpperBound(nextUBParam, epsilons, deltas);
                                 bestSoFar = challenger.upperBoundDistance;
                                 candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                             } else {
