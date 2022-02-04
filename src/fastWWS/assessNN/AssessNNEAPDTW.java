@@ -1,8 +1,10 @@
 package fastWWS.assessNN;
 
+import application.Application;
 import datasets.Sequence;
-import distances.EAPDTW;
+import distances.eap.EAPDTW;
 import fastWWS.SequenceStatsCache;
+import fastWWS.lazyAssessNN.LazyAssessNN;
 import results.WarpingPathResults;
 
 /**
@@ -107,18 +109,20 @@ public class AssessNNEAPDTW extends LazyAssessNN {
                         currentW,
                         bestSoFar);
                 if (res.earlyAbandon) {
+                    Application.eaCount++;
                     minDist = bestSoFar;
                     minWindowValidity = 0;
                     if (minDist > bestMinDist) bestMinDist = minDist;
                     status = LBStatus.Partial_DTW;
                     return RefineReturnType.Pruned_with_Dist;
                 }
+                Application.distCount++;
                 minDist = res.distance;
                 minWindowValidity = res.distanceFromDiagonal;
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_DTW;
             case Full_DTW:
-                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");

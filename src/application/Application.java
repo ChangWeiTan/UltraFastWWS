@@ -1,6 +1,13 @@
 package application;
 
 import classifiers.*;
+import classifiers.eapFastNN.*;
+import classifiers.eapNN.*;
+import classifiers.classicNN.ERPLoocv;
+import classifiers.fastNN.FastWWSearch;
+import classifiers.classicNN.*;
+import classifiers.fastNN.*;
+import classifiers.ultraFastNN.*;
 import datasets.Sequences;
 import fileIO.OutFile;
 import results.ClassificationResults;
@@ -15,12 +22,17 @@ public class Application {
     public static String datasetPath;
     public static String problem = "";
     public static String classifierName = "DTW-1NN";
-    public static int paramId = 0;
+    public static int paramId = -1;
     public static int verbose = 0;
     public static boolean znorm = true;
     public static boolean retrain = true;
     public static int iteration = 0;
     public static int numThreads = 0;
+    public static int distCount = 0;
+    public static int lbCount = 0;
+    public static int ubCount = 0;
+    public static int eaCount = 0;
+    public static long pointwiseCount = 0;
     public static double scalabilityTrainRatio = 0;
     public static double scalabilityLengthRatio = 0;
     public static boolean doEvaluation = true;
@@ -50,6 +62,9 @@ public class Application {
                         break;
                     case "-znorm":
                         znorm = Boolean.parseBoolean(options[1]);
+                        break;
+                    case "-retrain":
+                        retrain = Boolean.parseBoolean(options[1]);
                         break;
                     case "-cpu":
                         numThreads = Integer.parseInt(options[1]);
@@ -101,6 +116,163 @@ public class Application {
     public static TimeSeriesClassifier initTSC(final Sequences trainData) {
         TimeSeriesClassifier classifier;
         switch (classifierName) {
+            /// LCSS distance
+            case "UltraFastLCSSGlobal":
+                classifier = new UltraFastLCSSGlobal(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastLCSS":
+                classifier = new UltraFastLCSS(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastLCSSEA":
+                classifier = new EAPFastLCSSEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastLCSS":
+                classifier = new EAPFastLCSS(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastLCSS":
+                classifier = new FastLCSS(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPLCSSLOOCV":
+                classifier = new EAPLCSSLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "LCSSLOOCV":
+                classifier = new LCSSLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+
+            /// TWE distance
+            case "UltraFastTWEGlobal":
+                classifier = new UltraFastTWEGlobal(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastTWE":
+                classifier = new UltraFastTWE(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastTWEEA":
+                classifier = new EAPFastTWEEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastTWE":
+                classifier = new EAPFastTWE(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastTWE":
+                classifier = new FastTWE(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPTWELOOCV":
+                classifier = new EAPTWELoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "TWELOOCV":
+                classifier = new TWELoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+            /// ERP distance
+            case "UltraFastERPGlobal":
+                classifier = new UltraFastERPGlobal(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastERP":
+                classifier = new UltraFastERP(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastERPEA":
+                classifier = new EAPFastERPEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastERP":
+                classifier = new EAPFastERP(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastERP":
+                classifier = new FastERP(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPERPLOOCV":
+                classifier = new EAPERPLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "ERPLOOCV":
+                classifier = new ERPLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+            /// MSM distance
+            case "UltraFastMSMGlobal":
+                classifier = new UltraFastMSMGlobal(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastMSM":
+                classifier = new UltraFastMSM(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastMSMEA":
+                classifier = new EAPFastMSMEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastMSM":
+                classifier = new EAPFastMSM(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastMSM":
+                classifier = new FastMSM(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPMSMLOOCV":
+                classifier = new EAPMSMLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "MSMLOOCV":
+                classifier = new MSMLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+            /// WDTW distance
+            case "UltraFastWDTWGlobal":
+                classifier = new UltraFastWDTWGlobal(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "UltraFastWDTW":
+                classifier = new UltraFastWDTW(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastWDTWEA":
+                classifier = new EAPFastWDTWEA(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPFastWDTW":
+                classifier = new EAPFastWDTW(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "FastWDTW":
+                classifier = new FastWDTW(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
+            case "EAPWDTWLOOCV":
+                classifier = new EAPWDTWLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+            case "WDTWLOOCV":
+                classifier = new WDTWLoocv(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.LOOCV;
+                break;
+
+            /// DTW distance
+            case "UltraFastWWSearchGlobal":
+                // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
+                classifier = new UltraFastWWSearchGlobal(paramId, trainData);
+                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
+                break;
             case "UltraFastWWSearchFull":
                 // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
                 classifier = new UltraFastWWSearchFULL(paramId, trainData);
@@ -201,8 +373,6 @@ public class Application {
         outFile.writeLine("train_size," + trainingClassificationResults.trainSize);
         outFile.writeLine("train_time," + trainingClassificationResults.doTimeNs());
         outFile.writeLine("train_time_ns," + trainingClassificationResults.elapsedTimeNanoSeconds);
-        outFile.writeLine("train_dtw_count," + trainingClassificationResults.dtwCount);
-        outFile.writeLine("train_ea_count," + trainingClassificationResults.eaCount);
 
         outFile.writeLine("test_acc," + classificationResults.accuracy);
         outFile.writeLine("test_correct," + classificationResults.nbCorrect);
@@ -268,8 +438,6 @@ public class Application {
         outFile.writeLine("train_size," + trainingClassificationResults.trainSize);
         outFile.writeLine("train_time," + trainingClassificationResults.doTimeNs());
         outFile.writeLine("train_time_ns," + trainingClassificationResults.elapsedTimeNanoSeconds);
-        outFile.writeLine("train_dtw_count," + trainingClassificationResults.dtwCount);
-        outFile.writeLine("train_ea_count," + trainingClassificationResults.eaCount);
 
         if (trainingClassificationResults.cvParams != null) {
             StringBuilder str = new StringBuilder("[" + trainingClassificationResults.cvParams[0]);

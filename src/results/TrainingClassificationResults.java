@@ -1,5 +1,6 @@
 package results;
 
+import application.Application;
 import utils.GenericTools;
 
 public class TrainingClassificationResults {
@@ -14,8 +15,6 @@ public class TrainingClassificationResults {
     public double[] predictions;
     public int[] cvParams;
     public double[] cvAcc;
-    public int dtwCount;
-    public int eaCount;
 
     public int paramId = -1;
 
@@ -54,8 +53,12 @@ public class TrainingClassificationResults {
                     "\n\ttraining_time(ns) = " + elapsedTimeNanoSeconds +
                     "\n\ttraining_accuracy = " + accuracy +
                     "\n\tnb_correct = " + nbCorrect + "/" + trainSize +
-                    "\n\tdtw_count = " + dtwCount +
-                    "\n\tea_count = " + eaCount;
+                    "\n\tdist_count = " + Application.distCount +
+                    "\n\tlb_count = " + Application.lbCount +
+                    "\n\tub_count = " + Application.ubCount +
+                    "\n\tea_count = " + Application.eaCount +
+                    "\n\tpointwiseCount = " + Application.pointwiseCount;
+
 
         return "TrainingClassificationResults:" +
                 "\n\tclassifier = " + classifier +
@@ -64,7 +67,10 @@ public class TrainingClassificationResults {
                 "\n\ttraining_time(ns) = " + elapsedTimeNanoSeconds +
                 "\n\ttraining_accuracy = " + accuracy +
                 "\n\tnb_correct = " + nbCorrect + "/" + trainSize +
-                "\n\tdtw_count = " + dtwCount +
-                "\n\tea_count = " + eaCount;
+                "\n\tdist_count = " + Application.distCount +
+                "\n\tlb_count = " + Application.lbCount +
+                "\n\tub_count = " + Application.ubCount +
+                "\n\tea_count = " + Application.eaCount +
+                "\n\tpointwiseCount = " + Application.pointwiseCount;
     }
 }

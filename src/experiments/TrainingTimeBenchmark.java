@@ -5,8 +5,14 @@ import classifiers.TimeSeriesClassifier;
 import datasets.DatasetLoader;
 import datasets.Sequences;
 import datasets.TimeSeriesDatasets;
+import multiThreading.BenchmarkTask;
+import multiThreading.MultiThreadedTask;
 import results.ClassificationResults;
 import results.TrainingClassificationResults;
+import utils.StrLong;
+
+import java.util.*;
+import java.util.concurrent.Callable;
 
 import static application.Application.extractArguments;
 import static utils.GenericTools.doTimeNs;
@@ -15,18 +21,25 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=test",
-            "-classifier=UltraFastWWSearchFull", // see classifiers in TimeSeriesClassifier.java
-            "-paramId=99",
-            "-cpu=-1",
+            "-problem=Adiac",
+//            "-classifier=UltraFastTWE2", // see classifiers in TimeSeriesClassifier.java
+//            "-classifier=UltraFastERP3",
+//            "-classifier=UltraFastLCSS2",
+//            "-classifier=UltraFastLCSS3",
+//            "-classifier=TWELOOCV",
+//            "-classifier=UltraFastWWSearchV2",
+            "-classifier=UltraFastMSM3",
+            "-paramId=-1",
+            "-cpu=1",
             "-verbose=1",
             "-iter=0",
-            "-eval=0",
+            "-retrain=true",
+            "-eval=false",
     };
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-//        args = testArgs;
+        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))
@@ -36,12 +49,77 @@ public class TrainingTimeBenchmark {
 
         switch (Application.problem) {
             case "all":
-                for (String problem : TimeSeriesDatasets.allDatasets)
-                    singleRun(problem);
-                break;
+                if (Application.numThreads == 1) {
+                    StrLong[] datasetOps = TimeSeriesDatasets.allDatasetOperations;
+                    Arrays.sort(datasetOps);
+                    for (int i = datasetOps.length-1; i >= 0; i--) {
+                        StrLong a = datasetOps[i];
+                        singleRun(a.str);
+                        Application.outputPath = null;
+                    }
+                    break;
+                }
             case "small":
-                for (String problem : TimeSeriesDatasets.smallDatasets)
-                    singleRun(problem);
+                if (Application.numThreads == 1) {
+                    StrLong[] datasetOps = TimeSeriesDatasets.smallDatasetOperations;
+                    Arrays.sort(datasetOps);
+                    for (int i = datasetOps.length-1; i >= 0; i--) {
+                        StrLong a = datasetOps[i];
+                        singleRun(a.str);
+                        Application.outputPath = null;
+                    }
+                    break;
+                }
+                String[] datasets;
+                StrLong[] datasetOps;
+                if (Application.problem.equals("small")) {
+                    datasets = TimeSeriesDatasets.smallDatasets;
+                    datasetOps = TimeSeriesDatasets.smallDatasetOperations;
+                } else {
+                    datasets = TimeSeriesDatasets.allDatasets;
+                    datasetOps = TimeSeriesDatasets.allDatasetOperations;
+                }
+                Arrays.sort(datasetOps);
+                long totalOp = 0;
+                for (StrLong s : datasetOps) totalOp += s.value;
+
+                println("[" + moduleName + "] Number of datasets: " + datasets.length);
+                println("[" + moduleName + "] Total operations: " + totalOp);
+
+                ArrayList<String> myList = new ArrayList<>();
+                Collections.addAll(myList, datasets);
+                Collections.shuffle(myList, new Random(42));
+// Setup parallel training tasks
+                int numThreads = Application.numThreads;
+                if (numThreads <= 0) numThreads = Runtime.getRuntime().availableProcessors();
+                numThreads = Math.min(numThreads, Runtime.getRuntime().availableProcessors());
+
+                long operationPerThread = totalOp / numThreads;
+
+                println("[" + moduleName + "] Number of threads: " + numThreads);
+                println("[" + moduleName + "] Operations per thread: " + operationPerThread);
+
+                final MultiThreadedTask parallelTasks = new MultiThreadedTask(numThreads);
+
+                List<Callable<Integer>> tasks = new ArrayList<>();
+                ArrayList<String>[] subset = new ArrayList[numThreads];
+                for (int i = 0; i < numThreads; i++)
+                    subset[i] = new ArrayList<>();
+                int threadCount = 0;
+                for (StrLong s : datasetOps) {
+                    subset[threadCount].add(s.str);
+                    threadCount++;
+                    if (threadCount == numThreads) threadCount = 0;
+                }
+                for (int i = 0; i < numThreads; i++) {
+                    String[] tmp = new String[subset[i].size()];
+                    for (int j = 0; j < subset[i].size(); j++) {
+                        tmp[j] = subset[i].get(subset[i].size() - j - 1);
+                    }
+                    tasks.add(new BenchmarkTask(tmp, i));
+                }
+                MultiThreadedTask.invokeParallelTasks(tasks, parallelTasks);
+                parallelTasks.getExecutor().shutdown();
                 break;
             case "test":
                 quickTest();
@@ -74,8 +152,11 @@ public class TrainingTimeBenchmark {
                         problem + "/";
         }
 
+        if (!Application.retrain && Application.isDatasetDone(Application.outputPath))
+            return;
+
         DatasetLoader loader = new DatasetLoader();
-        Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm);
+        Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm).reorderClassLabels(null);
         trainData.summary();
 
         TimeSeriesClassifier classifier = Application.initTSC(trainData);
@@ -84,10 +165,11 @@ public class TrainingTimeBenchmark {
         TrainingClassificationResults trainingResults = classifier.fit(trainData);
         trainingResults.problem = problem;
         println("[" + moduleName + "]" + trainingResults);
+        println(classifier);
 
         double totalTime = trainingResults.elapsedTimeNanoSeconds;
         if (Application.doEvaluation) {
-            Sequences testData = loader.readUCRTest(problem, Application.datasetPath, Application.znorm);
+            Sequences testData = loader.readUCRTest(problem, Application.datasetPath, Application.znorm).reorderClassLabels(trainData.getInitialClassLabels());
             testData.summary();
             ClassificationResults classificationResults = classifier.evaluate(testData);
             testData.summary();

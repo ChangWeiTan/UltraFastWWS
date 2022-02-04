@@ -21,6 +21,7 @@ public class BenchmarkTask implements Callable<Integer> {
     }
 
     private void singleRun(String problem) throws Exception {
+        if (Application.verbose >= 0) println("[Thread_" + threadCount + "] Running " + problem);
         DatasetLoader loader = new DatasetLoader();
         Sequences trainData = loader.readUCRTrain(problem, Application.datasetPath, Application.znorm).reorderClassLabels(null);
         if (Application.verbose > 1) trainData.summary();
