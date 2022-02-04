@@ -268,14 +268,9 @@ public class Application {
                 break;
 
             /// DTW distance
-            case "UltraFastWWSearch3":
+            case "UltraFastWWSearchGlobal":
                 // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
                 classifier = new UltraFastWWSearchGlobal(paramId, trainData);
-                classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
-                break;
-            case "UltraFastWWSearch2":
-                // UltraFastWWSearch with sorting the training set in descending order and then sorting on full DTW
-                classifier = new UltraFastWWSearch2(paramId, trainData);
                 classifier.trainingOptions = TimeSeriesClassifier.TrainOpts.FastWWS;
                 break;
             case "UltraFastWWSearchFull":
