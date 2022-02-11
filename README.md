@@ -1,8 +1,19 @@
-# UltraFastWWS
-Ultra fast warping window optimization for Dynamic Time Warping
+# UltraFastMPSearch
+Ultra fast meta-parameter optimization for
+time series similarity measures with
+application to nearest neighbor classification
 
-> <div align="justify"> The Dynamic Time Warping (DTW) similarity measure is widely used in many time series data mining applications. It computes the cost of aligning two series, smaller costs indicating more similar series. Most applications require tuning of DTW’s Warping Window (WW) parameter in order to achieve good performance. This parameter controls the amount of warping allowed, reducing pathological alignments, with the added benefit of speeding up computation. However, since DTW is in itself very costly, learning the WW is a burdensome process, requiring days even for datasets containing only a few thousand series. </div> 
-> <div align="justify">In this paper, we propose ULTRAFASTWWSEARCH, a new algorithm able to learn the WW significantly faster than the state-of-the-art FASTWWSEARCH [1] method. ULTRAFASTWWSEARCH builds upon the latter, exploiting the properties of a new efficient exact DTW algorithm which supports early abandoning and pruning (EAP) [2]. We show on 128 datasets from the UCR archive that ULTRAFASTWWSEARCH is up to an order of magnitude faster than the previous state of the art.</div>
+> <div align="justify">Nearest neighbor similarity measures are widely used in many time series data analysis applications. They compute a measure of similarity between two time series. Most applications require tuning of these measures' meta-parameters in order to achieve good performance. However, most measures have at least O(L^2) complexity, making them computationally expensive and the process of learning their meta-parameters burdensome, requiring days even for datasets containing only a few thousand series. In this paper, we propose UltraFastMPSearch, a family of algorithms to learn the meta-parameters for different types of time series distance measures. These algorithms are significantly faster than the prior state of the art. Our algorithms build upon the state of the art, exploiting the properties of a new efficient exact algorithm which supports early abandoning and pruning (EAP) for most time series distance measures. We show on 128 datasets from the UCR archive that our new family of algorithms are up to an order of magnitude faster than the previous state of the art.
+
+1. **UltraFastWWSearch** -- recently proposed in our paper IEEE ICDM2021 [4], UltraFastWWSearch was designed specifically for DTW, exploiting
+a DTW property called the window validity to gain further substantial
+speedup
+2. **UltraFastLocalUB** -- a variant of UltraFastWWSearch extended to
+   other distance measures without the window validity. WDTW, LCSS, ERP
+3. **UltraFastGlobalUB** -- a variant of UltraFastLocalUB that uses a
+   global rather than local upper bound, ensuring that a distance computation
+   is only early abandoned if it cannot provide a useful lower bound for distance
+   computations with subsequent meta parameter values. MSM, TWE
 
 ## Code
 Remember to compile beforehand
@@ -81,3 +92,7 @@ distances,” arXiv preprint arXiv:2102.05221, 2021.
 C. A. Ratanamahatana, Yanping, B. Hu, N. Begum, A. Bagnall,
 A. Mueen, G. Batista, and Hexagon-ML, “The UCR time series classification archive,” October 2018, https://www.cs.ucr.edu/∼eamonn/time
 series data 2018/.
+
+[4] C. W. Tan, M. Herrmann, and G. I. Webb,
+“Ultra fast warping window optimization for Dynamic Time Warping,”
+in Proc. 2021 IEEE Int. Conf. Data Mining. IEEE, 2021, pp. 589–598.
