@@ -82,7 +82,7 @@ public class ERP1NN extends OneNearestNeighbour {
     @Override
     public void initNNSTable(final Sequences train, final SequenceStatsCache cache) {
         if (train.size() < 2) {
-            System.err.println("[INIT-NNS-TABLE] Set is too small: " + train.size() + " sequence. At least 2 sequences needed.");
+            System.err.println("[INIT-NNS-TABLE] Set is to small: " + train.size() + " sequence. At least 2 sequences needed.");
         }
 
         candidateNNS = new CandidateNN[nParams][train.size()];
@@ -111,24 +111,24 @@ public class ERP1NN extends OneNearestNeighbour {
 
             for (int paramId = nParams - 1; paramId > -1; --paramId) {
                 setParamsFromParamId(paramId);
-                final int band = distComputer.getWindowSize(train.length(), bandSize);
                 final CandidateNN currPNN = candidateNNS[paramId][current];
 
                 if (currPNN.isNN()) {
                     // --- --- WITH NN CASE --- ---
                     // We already have the NN for sure, but we still have to check if current is the new NN for previous
                     for (int previous = 0; previous < current; ++previous) {
+                        // --- Get the data
                         final CandidateNN prevNN = candidateNNS[paramId][previous];
 
                         // --- Try to beat the previous best NN
                         final double toBeat = prevNN.distance;
                         final LazyAssessNNERP challenger = lazyAssessNNS[previous];
-                        final LazyAssessNNERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, this.g, this.bandSize);
+                        final LazyAssessNNERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, g, bandSize);
 
                         // --- Check the result
                         if (rrt == LazyAssessNNERP.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
-                            final double d = challenger.getDistance(r);
+                            final double d = challenger.getDistance(ERP.getWindowSize(train.length(), bandSize));
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
@@ -150,12 +150,12 @@ public class ERP1NN extends OneNearestNeighbour {
 
                         // --- First we want to beat the current best candidate:
                         double toBeat = currPNN.distance;
-                        LazyAssessNNERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, this.g, this.bandSize);
+                        LazyAssessNNERP.RefineReturnType rrt = challenger.tryToBeat(toBeat, g, bandSize);
 
                         // --- Check the result
                         if (rrt == LazyAssessNNERP.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
-                            final double d = challenger.getDistance(r);
+                            final double d = challenger.getDistance(ERP.getWindowSize(train.length(), bandSize));
                             currPNN.set(previous, r, d, CandidateNN.Status.BC);
                             if (d < toBeat) {
                                 classCounts[paramId][current] = new int[train.getNumClasses()];
@@ -169,12 +169,12 @@ public class ERP1NN extends OneNearestNeighbour {
                         // --- Try to beat the previous best NN
                         toBeat = prevNN.distance;
                         challenger = lazyAssessNNS[previous];
-                        rrt = challenger.tryToBeat(toBeat, this.g, this.bandSize);
+                        rrt = challenger.tryToBeat(toBeat, g, bandSize);
 
                         // --- Check the result
                         if (rrt == LazyAssessNNERP.RefineReturnType.New_best) {
                             final int r = challenger.getMinWindowValidityForFullDistance();
-                            final double d = challenger.getDistance(r);
+                            final double d = challenger.getDistance(ERP.getWindowSize(train.length(), bandSize));
                             prevNN.set(current, r, d, CandidateNN.Status.NN);
                             if (d < toBeat) {
                                 classCounts[paramId][previous] = new int[train.getNumClasses()];
@@ -223,6 +223,9 @@ public class ERP1NN extends OneNearestNeighbour {
             double stdv = GenericTools.stdv_p(trainData);
             bandSizes = GenericTools.getInclusive10(0, 0.25);
             gValues = GenericTools.getInclusive10(0.2 * stdv, stdv);
+//            gValues = new double[10];
+//            for (int i = 0; i < 10; i++) gValues[i] = 0.2;
+
             this.gAndWindowsRefreshed = true;
         }
         this.g = gValues[paramId / 10];

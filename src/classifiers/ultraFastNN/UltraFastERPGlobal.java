@@ -218,6 +218,7 @@ public class UltraFastERPGlobal extends EAPERP1NN {
                 this.setParamsFromParamId(tmp);
                 w = ERP.getWindowSize(train.length(), bandSize);
             }
+            setParamsFromParamId(paramId);
 
             // now sort the existing series based on distance at w+1
             Collections.sort(challengers);

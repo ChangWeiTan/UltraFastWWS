@@ -21,8 +21,8 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=ECG5000",
-            "-classifier=UltraFastWWSearch",
+            "-problem=MedicalImages",
+            "-classifier=EAPFastERP",
             "-paramId=-1",
             "-cpu=1",
             "-verbose=1",
@@ -33,7 +33,7 @@ public class TrainingTimeBenchmark {
 
     public static void main(String[] args) throws Exception {
         final long startTime = System.nanoTime();
-//        args = testArgs;
+        args = testArgs;
         extractArguments(args);
 
         if (Application.problem.equals(""))

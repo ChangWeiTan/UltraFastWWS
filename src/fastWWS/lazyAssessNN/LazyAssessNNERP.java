@@ -31,6 +31,7 @@ public class LazyAssessNNERP extends LazyAssessNN {
         indexStoppedLB = oldIndexStoppedLB = 0;
         currentG = 0;
         currentBandSize = 0;
+        minWindowValidity = 0;
         // --- From constructor
         if (index < indexReference) {
             this.query = query;
@@ -205,7 +206,7 @@ public class LazyAssessNNERP extends LazyAssessNN {
                 if (minDist > bestMinDist) bestMinDist = minDist;
                 status = LBStatus.Full_ERP;
             case Full_ERP:
-                if (bestMinDist > scoreToBeat) return RefineReturnType.Pruned_with_Dist;
+                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_Dist;
                 else return RefineReturnType.New_best;
             default:
                 throw new RuntimeException("Case not managed");

@@ -155,31 +155,6 @@ public class AssessNNEAPERP extends LazyAssessNN {
             case None:
             case Previous_Band_ERP:
             case Partial_ERP:
-//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-//                indexStoppedLB = 0;
-//                minDist = 0;
-//            case Partial_LB_ERPQR:
-//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-//                tryContinueLBERPQR(scoreToBeat);
-//                if (minDist > bestMinDist) bestMinDist = minDist;
-//                if (bestMinDist >= scoreToBeat) {
-//                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_ERPQR;
-//                    else status = LBStatus.Full_LB_ERPQR;
-//                    return RefineReturnType.Pruned_with_LB;
-//                } else status = LBStatus.Full_LB_ERPQR;
-//            case Full_LB_ERPQR:
-//                indexStoppedLB = 0;
-//                minDist = 0;
-//            case Partial_LB_ERPRQ:
-//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-//                tryContinueLBERPRQ(scoreToBeat);
-//                if (minDist > bestMinDist) bestMinDist = minDist;
-//                if (bestMinDist >= scoreToBeat) {
-//                    if (indexStoppedLB < reference.length()) status = LBStatus.Partial_LB_ERPRQ;
-//                    else status = LBStatus.Full_LB_ERPRQ;
-//                    return RefineReturnType.Pruned_with_LB;
-//                } else status = LBStatus.Full_LB_ERPRQ;
-//            case Full_LB_ERPRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentG, currentWindowSize, bestSoFar);
                 if (res.earlyAbandon) {
@@ -209,31 +184,6 @@ public class AssessNNEAPERP extends LazyAssessNN {
             case None:
             case Previous_Band_ERP:
             case Partial_ERP:
-//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-//                indexStoppedLB = 0;
-//                minDist = 0;
-//            case Partial_LB_ERPQR:
-//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-//                tryContinueLBERPQR(scoreToBeat);
-//                if (minDist > bestMinDist) bestMinDist = minDist;
-//                if (bestMinDist >= scoreToBeat) {
-//                    if (indexStoppedLB < query.length()) status = LBStatus.Partial_LB_ERPQR;
-//                    else status = LBStatus.Full_LB_ERPQR;
-//                    return RefineReturnType.Pruned_with_LB;
-//                } else status = LBStatus.Full_LB_ERPQR;
-//            case Full_LB_ERPQR:
-//                indexStoppedLB = 0;
-//                minDist = 0;
-//            case Partial_LB_ERPRQ:
-//                if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
-//                tryContinueLBERPRQ(scoreToBeat);
-//                if (minDist > bestMinDist) bestMinDist = minDist;
-//                if (bestMinDist >= scoreToBeat) {
-//                    if (indexStoppedLB < reference.length()) status = LBStatus.Partial_LB_ERPRQ;
-//                    else status = LBStatus.Full_LB_ERPRQ;
-//                    return RefineReturnType.Pruned_with_LB;
-//                } else status = LBStatus.Full_LB_ERPRQ;
-//            case Full_LB_ERPRQ:
                 if (bestMinDist >= scoreToBeat) return RefineReturnType.Pruned_with_LB;
                 final WarpingPathResults res = distComputer.distanceExt(query.data[0], reference.data[0], currentG, currentWindowSize, Double.POSITIVE_INFINITY);
                 minDist = res.distance;

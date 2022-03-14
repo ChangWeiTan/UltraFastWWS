@@ -233,9 +233,9 @@ public class LazyAssessNNEAPERP extends LazyAssessNN {
             case Partial_LB_ERPQR:
             case Partial_LB_ERPRQ:
                 return thisD / indexStoppedLB;
+            case Previous_G_LB_ERP:
             case Previous_Band_ERP:
                 return 0.8 * thisD / (query.length());
-            case Previous_G_LB_ERP:
             case Previous_Band_LB_ERP:
                 return thisD / oldIndexStoppedLB;
             case None:

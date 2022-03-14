@@ -360,7 +360,7 @@ public class EAPERP extends ElasticDistances {
                     if (diagonal <= previous && diagonal <= above) {
                         // diagonal
                         cost = diagonal;
-                        mw = buffers_w[p + j - 1];
+                        mw = max(dw, buffers_w[p + j - 1]);
                     } else if (previous <= diagonal && previous <= above) {
                         // previous
                         cost = previous;
@@ -388,7 +388,7 @@ public class EAPERP extends ElasticDistances {
                         mw = max(dw, buffers_w[c + j - 1]);
                     } else {
                         cost = diagonal;
-                        mw = buffers_w[p + j - 1];
+                        mw = max(dw, buffers_w[p + j - 1]);
                     }
                     buffers[c + j] = cost;
                     buffers_w[c + j] = mw;
