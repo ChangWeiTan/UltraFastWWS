@@ -110,7 +110,6 @@ public class UltraFastTWE extends EAPTWE1NN {
                     if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
                         challenger.getUpperBound(nextUBParam);
                         bestSoFar = challenger.upperBoundDistance;
-                        candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                     } else {
                         bestSoFar = candidateNNS[nextUBParam][current].distance;
                     }
@@ -184,7 +183,6 @@ public class UltraFastTWE extends EAPTWE1NN {
                             if (candidateNNS[nextUBParam][previous].distance == Double.POSITIVE_INFINITY) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
-                                candidateNNS[nextUBParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                             } else {
                                 bestSoFar = candidateNNS[nextUBParam][previous].distance;
                             }
@@ -218,7 +216,6 @@ public class UltraFastTWE extends EAPTWE1NN {
                         if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
                             challenger.getUpperBound(nextUBParam);
                             bestSoFar = challenger.upperBoundDistance;
-                            candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                         } else {
                             bestSoFar = candidateNNS[nextUBParam][current].distance;
                         }
@@ -272,7 +269,6 @@ public class UltraFastTWE extends EAPTWE1NN {
                             if (candidateNNS[nextUBParam][current].distance == Double.POSITIVE_INFINITY) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
-                                candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                             } else {
                                 bestSoFar = candidateNNS[nextUBParam][current].distance;
                             }

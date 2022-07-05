@@ -279,7 +279,13 @@ public abstract class OneNearestNeighbour extends TimeSeriesClassifier {
             System.out.println("[1-NN] Initialising NNs table for Fast Parameter Search");
 
         initNNSTable(train, trainCache);
-
+        for (int paramId = 0; paramId < nParams; paramId++) {
+            System.out.print(paramId + "," + candidateNNS[paramId][0].nnIndex);
+            for (int i = 1; i < candidateNNS[paramId].length; i++) {
+                System.out.print("," + candidateNNS[paramId][i].nnIndex);
+            }
+            System.out.println();
+        }
         for (int paramId = 0; paramId < nParams; paramId++) {
             cvParams[paramId] = paramId;
             if (Application.verbose > 1)

@@ -21,8 +21,8 @@ import static utils.GenericTools.println;
 public class TrainingTimeBenchmark {
     static String moduleName = "TrainingTimeBenchmark";
     private static final String[] testArgs = new String[]{
-            "-problem=MedicalImages",
-            "-classifier=EAPFastERP",
+            "-problem=ECGFiveDays",
+            "-classifier=UltraFastLCSSGlobal",
             "-paramId=-1",
             "-cpu=1",
             "-verbose=1",

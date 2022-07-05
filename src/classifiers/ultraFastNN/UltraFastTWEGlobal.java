@@ -109,13 +109,11 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                     if (upperBounds.get(current, previous, ubCount) == 0) {
                         challenger.getUpperBound(nextUBParam);
                         bestSoFar = challenger.upperBoundDistance;
-                        candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                         upperBounds.put(current, previous, bestSoFar, ubCount);
                     } else {
                         bestSoFar = upperBounds.get(current, previous, ubCount);
                     }
                 } else {
-//                    bestSoFar = Math.max(toBeat, prevNN.distance);
                     double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                     if (a == 0) {
                         if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -124,10 +122,7 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                             upperBounds.put(current, currPNN.nnIndex,
                                     getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                             candidateNNS[nextUBParam][current].distance, nextUBParam), ubCount);
-                        // update NNS
                         a = upperBounds.get(current, currPNN.nnIndex, ubCount);
-                        if (a < candidateNNS[nextUBParam][current].distance)
-                            candidateNNS[nextUBParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                     }
                     if (prevNN.nnIndex >= 0) {
                         double b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
@@ -139,9 +134,6 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                         getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                 candidateNNS[nextUBParam][previous].distance, nextUBParam), ubCount);
                             b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
-                            // update NNS
-                            if (b < candidateNNS[nextUBParam][previous].distance)
-                                candidateNNS[nextUBParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                         }
                         bestSoFar = Math.max(a, b);
                     } else {
@@ -218,13 +210,11 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                             if (upperBounds.get(current, previous, ubCount) == 0) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
-                                candidateNNS[nextUBParam][previous].set(current, bestSoFar, CandidateNN.Status.BC);
                                 upperBounds.put(current, previous, bestSoFar, ubCount);
                             } else {
                                 bestSoFar = upperBounds.get(current, previous, ubCount);
                             }
                         } else {
-//                            bestSoFar = toBeat;
                             double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                             if (a == 0) {
                                 if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -233,10 +223,6 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                     upperBounds.put(current, currPNN.nnIndex,
                                             getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                                     candidateNNS[nextUBParam][current].distance, nextUBParam), ubCount);
-                                // update NNS
-                                a = upperBounds.get(current, currPNN.nnIndex, ubCount);
-                                if (a < candidateNNS[nextUBParam][current].distance)
-                                    candidateNNS[nextUBParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                             }
                             if (prevNN.nnIndex >= 0) {
                                 double b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
@@ -248,9 +234,6 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                                 getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                         candidateNNS[nextUBParam][previous].distance, nextUBParam), ubCount);
                                     b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
-                                    // update NNS
-                                    if (b < candidateNNS[nextUBParam][previous].distance)
-                                        candidateNNS[nextUBParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                                 }
                                 bestSoFar = Math.max(a, b);
                             } else {
@@ -284,13 +267,11 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                         if (upperBounds.get(current, previous, ubCount) == 0) {
                             challenger.getUpperBound(nextUBParam);
                             bestSoFar = challenger.upperBoundDistance;
-                            candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                             upperBounds.put(current, previous, bestSoFar, ubCount);
                         } else {
                             bestSoFar = upperBounds.get(current, previous, ubCount);
                         }
                     } else {
-//                        bestSoFar = Math.max(toBeat, prevNN.distance);
                         double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                         if (a == 0) {
                             if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -299,10 +280,7 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                 upperBounds.put(current, currPNN.nnIndex,
                                         getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                                 candidateNNS[nextUBParam][current].distance, nextUBParam), ubCount);
-                            // update NNS
                             a = upperBounds.get(current, currPNN.nnIndex, ubCount);
-                            if (a < candidateNNS[nextUBParam][current].distance)
-                                candidateNNS[nextUBParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                         }
                         if (prevNN.nnIndex >= 0) {
                             double b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
@@ -314,9 +292,6 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                             getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                     candidateNNS[nextUBParam][previous].distance, nextUBParam), ubCount);
                                 b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
-                                // update NNS
-                                if (b < candidateNNS[nextUBParam][previous].distance)
-                                    candidateNNS[nextUBParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                             }
                             bestSoFar = Math.max(a, b);
                         } else {
@@ -370,13 +345,11 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                             if (upperBounds.get(current, previous, ubCount) == 0) {
                                 challenger.getUpperBound(nextUBParam);
                                 bestSoFar = challenger.upperBoundDistance;
-                                candidateNNS[nextUBParam][current].set(previous, bestSoFar, CandidateNN.Status.BC);
                                 upperBounds.put(current, previous, bestSoFar, ubCount);
                             } else {
                                 bestSoFar = upperBounds.get(current, previous, ubCount);
                             }
                         } else {
-//                            bestSoFar = Math.max(toBeat, prevNN.distance);
                             double a = upperBounds.get(current, currPNN.nnIndex, ubCount);
                             if (a == 0) {
                                 if (currPNN.nnIndex == candidateNNS[nextUBParam][current].nnIndex)
@@ -385,10 +358,7 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                     upperBounds.put(current, currPNN.nnIndex,
                                             getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                                     candidateNNS[nextUBParam][current].distance, nextUBParam), ubCount);
-                                // update NNS
                                 a = upperBounds.get(current, currPNN.nnIndex, ubCount);
-                                if (a < candidateNNS[nextUBParam][current].distance)
-                                    candidateNNS[nextUBParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                             }
                             if (prevNN.nnIndex >= 0) {
                                 double b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
@@ -400,9 +370,6 @@ public class UltraFastTWEGlobal extends EAPTWE1NN {
                                                 getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                         candidateNNS[nextUBParam][previous].distance, nextUBParam), ubCount);
                                     b = upperBounds.get(previous, prevNN.nnIndex, ubCount);
-                                    // update NNS
-                                    if (b < candidateNNS[nextUBParam][previous].distance)
-                                        candidateNNS[nextUBParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                                 }
                                 bestSoFar = Math.max(a, b);
                             } else {

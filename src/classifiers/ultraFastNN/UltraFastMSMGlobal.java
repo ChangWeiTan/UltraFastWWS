@@ -116,10 +116,7 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                             upperBounds.put(current, currPNN.nnIndex,
                                     getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                             candidateNNS[ubParam][current].distance));
-                        // update NNS
                         a = upperBounds.get(current, currPNN.nnIndex);
-                        if (a < candidateNNS[ubParam][current].distance)
-                            candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                     }
                     if (prevNN.nnIndex >= 0) {
                         double b = upperBounds.get(previous, prevNN.nnIndex);
@@ -131,9 +128,6 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                         getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                 candidateNNS[ubParam][previous].distance));
                             b = upperBounds.get(previous, prevNN.nnIndex);
-                            // update NNS
-                            if (b < candidateNNS[ubParam][previous].distance)
-                                candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                         }
                         bestSoFar = Math.max(a, b);
                     } else {
@@ -219,10 +213,7 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                     upperBounds.put(current, currPNN.nnIndex,
                                             getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                                     candidateNNS[ubParam][current].distance));
-                                // update NNS
                                 a = upperBounds.get(current, currPNN.nnIndex);
-                                if (a < candidateNNS[ubParam][current].distance)
-                                    candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                             }
                             if (prevNN.nnIndex >= 0) {
                                 double b = upperBounds.get(previous, prevNN.nnIndex);
@@ -234,9 +225,6 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                                 getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                         candidateNNS[ubParam][previous].distance));
                                     b = upperBounds.get(previous, prevNN.nnIndex);
-                                    // update NNS
-                                    if (b < candidateNNS[ubParam][previous].distance)
-                                        candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                                 }
                                 bestSoFar = Math.max(a, b);
                             } else {
@@ -284,10 +272,7 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                 upperBounds.put(current, currPNN.nnIndex,
                                         getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                                 candidateNNS[ubParam][current].distance));
-                            // update NNS
                             a = upperBounds.get(current, currPNN.nnIndex);
-                            if (a < candidateNNS[ubParam][current].distance)
-                                candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                         }
                         if (prevNN.nnIndex >= 0) {
                             double b = upperBounds.get(previous, prevNN.nnIndex);
@@ -299,9 +284,6 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                             getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                     candidateNNS[ubParam][previous].distance));
                                 b = upperBounds.get(previous, prevNN.nnIndex);
-                                // update NNS
-                                if (b < candidateNNS[ubParam][previous].distance)
-                                    candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                             }
                             bestSoFar = Math.max(a, b);
                         } else {
@@ -369,10 +351,7 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                     upperBounds.put(current, currPNN.nnIndex,
                                             getUB(sCurrent.data[0], train.get(currPNN.nnIndex).data[0],
                                                     candidateNNS[ubParam][current].distance));
-                                // update NNS
                                 a = upperBounds.get(current, currPNN.nnIndex);
-                                if (a < candidateNNS[ubParam][current].distance)
-                                    candidateNNS[ubParam][current].set(currPNN.nnIndex, a, CandidateNN.Status.BC);
                             }
                             if (prevNN.nnIndex >= 0) {
                                 double b = upperBounds.get(previous, prevNN.nnIndex);
@@ -384,9 +363,6 @@ public class UltraFastMSMGlobal extends EAPMSM1NN {
                                                 getUB(train.get(previous).data[0], train.get(prevNN.nnIndex).data[0],
                                                         candidateNNS[ubParam][previous].distance));
                                     b = upperBounds.get(previous, prevNN.nnIndex);
-                                    // update NNS
-                                    if (b < candidateNNS[ubParam][previous].distance)
-                                        candidateNNS[ubParam][previous].set(prevNN.nnIndex, b, CandidateNN.Status.BC);
                                 }
                                 bestSoFar = Math.max(a, b);
                             } else {

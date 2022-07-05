@@ -3,7 +3,7 @@ package utils;
 /**
  * Stores a tuple
  */
-public class StrLong implements Comparable<StrLong>{
+public class StrLong implements Comparable<StrLong> {
     public long value;
     public String str;
 
@@ -14,6 +14,6 @@ public class StrLong implements Comparable<StrLong>{
 
     @Override
     public int compareTo(StrLong other) {
-        return Long.compare(other.value, value);
+        return Long.compare(value, other.value);
     }
 }
